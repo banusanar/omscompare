@@ -1,0 +1,56 @@
+#ifndef OMSCOMPARE_MODEL_METRICS_H_
+#define OMSCOMPARE_MODEL_METRICS_H_
+
+#include <atomic>
+#include <chrono>
+#include <cstdint>
+#include <iostream>
+#include <list>
+#include <map>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace omscompare {
+namespace model {
+
+struct Unit {
+  uint64_t count{0};
+  double timetaken{0.0};
+};
+
+class Counter {
+public:
+  Counter()
+      : count(0), total_time_since_count(0.0), begin_start_of_operation() {}
+
+  void start_watch();
+  std::optional<Unit> stop_watch();
+
+private:
+  std::atomic<uint64_t> count;
+  double total_time_since_count;
+  std::chrono::steady_clock::time_point begin_start_of_operation;
+};
+
+class Metrics {
+public:
+  enum class Operation { UNKNOWN, ADD, UPDATE, DELETE };
+  const std::vector<std::string> OpStr{"UNKNOWN", "ADD", "UPDATE", "DELETE"};
+
+  Metrics(const std::string &container);
+
+  void add(Operation &oper, uint64_t count, double timetaken);
+  void status();
+
+  Counter &counter() { return counter_; }
+
+private:
+  std::string container;
+  std::map<Operation, std::list<Unit>> units;
+  Counter counter_;
+};
+
+} // namespace model
+} // namespace omscompare
+#endif
