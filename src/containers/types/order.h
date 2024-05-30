@@ -9,7 +9,7 @@
 #include "basket.h"
 
 namespace omscompare {
-    namespace omstypes {
+    namespace types {
 
 
 struct Order {

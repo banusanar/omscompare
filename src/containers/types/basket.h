@@ -4,7 +4,7 @@
 
 
 namespace omscompare {
-    namespace omstypes {
+    namespace types {
 
 using IdType = uint64_t;
 

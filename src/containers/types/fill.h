@@ -9,7 +9,7 @@
 #include "basket.h"
 
 namespace omscompare {
-    namespace omstypes {
+    namespace types {
 
 enum class ExecStatus {
     NEW,
@@ -21,6 +21,7 @@ enum class ExecStatus {
 struct Fill {
     IdType id;
     IdType route_id;
+    IdType order_id;
     ExecStatus status;
     std::optional<IdType> original_id; //If this is a corrected fill, what was the original id
     std::byte data[1024];

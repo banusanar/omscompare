@@ -8,7 +8,7 @@
 #include "basket.h"
 
 namespace omscompare {
-    namespace omstypes {
+    namespace types {
 
 enum class RouteStatus {
     SENT,
