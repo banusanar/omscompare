@@ -35,8 +35,9 @@ private:
 
 class Metrics {
 public:
-  enum class Operation { UNKNOWN, ADD, UPDATE, DELETE };
-  const std::vector<std::string> OpStr{"UNKNOWN", "ADD", "UPDATE", "DELETE"};
+  enum class Operation { UNKNOWN, FIND, ADD, UPDATE, DELETE };
+  const std::vector<std::string> OpStr{"UNKNOWN", "FIND", "ADD", "UPDATE",
+                                       "DELETE"};
 
   Metrics(const std::string &container);
 
