@@ -10,7 +10,7 @@ using IdType = uint64_t;
 using FixClOrdIdType = std::string;
 using FixExecIdType = std::string;
 
-}
-}
+} // namespace types
+} // namespace omscompare
 
 #endif

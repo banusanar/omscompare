@@ -73,24 +73,20 @@ struct statusFillIdsForRouteIdIdx {
 using Fill = boost::multi_index_container<
     types::Fill,
     boost::multi_index::indexed_by<
+        boost::multi_index::hashed_unique<boost::multi_index::tag<fill_by_idx>,
+                                          fillIdIdx>,
         boost::multi_index::hashed_unique<
-          boost::multi_index::tag<fill_by_idx>,
-          fillIdIdx>,
-        boost::multi_index::hashed_unique<
-          boost::multi_index::tag<fill_by_exec_idx>,
-          fillExecIdx>,
+            boost::multi_index::tag<fill_by_exec_idx>, fillExecIdx>,
         boost::multi_index::hashed_non_unique<
-          boost::multi_index::tag<fill_by_route_idx>,
-          fillRouteIdIdx>,
+            boost::multi_index::tag<fill_by_route_idx>, fillRouteIdIdx>,
         boost::multi_index::hashed_non_unique<
-          boost::multi_index::tag<fill_by_order_idx>,
-          fillOrderIdIdx>,
+            boost::multi_index::tag<fill_by_order_idx>, fillOrderIdIdx>,
         boost::multi_index::hashed_unique<
-          boost::multi_index::tag<fill_by_status_order_idx>,
-          statusFillIdsForRouteIdIdx>,
+            boost::multi_index::tag<fill_by_status_order_idx>,
+            statusFillIdsForRouteIdIdx>,
         boost::multi_index::hashed_unique<
-          boost::multi_index::tag<fill_by_status_order_route_idx>,
-          statusFillIdsForOrderIdIdx>>>;
+            boost::multi_index::tag<fill_by_status_order_route_idx>,
+            statusFillIdsForOrderIdIdx>>>;
 
 } // namespace containers
 } // namespace omscompare

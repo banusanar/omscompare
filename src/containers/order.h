@@ -52,8 +52,8 @@ using Order = boost::multi_index_container<
     boost::multi_index::indexed_by<
         boost::multi_index::hashed_unique<boost::multi_index::tag<order_by_idx>,
                                           orderIdIdx>,
-        boost::multi_index::hashed_unique<boost::multi_index::tag<order_by_clord_idx>,
-                                          globalClordIdIdx>,
+        boost::multi_index::hashed_unique<
+            boost::multi_index::tag<order_by_clord_idx>, globalClordIdIdx>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<order_by_parent_idx>, parentIdOrderIdx>,
         boost::multi_index::hashed_non_unique<

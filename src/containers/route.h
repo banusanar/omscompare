@@ -44,15 +44,13 @@ struct statusRouteIdsForOrderIdIdx {
 using Route = boost::multi_index_container<
     types::Route,
     boost::multi_index::indexed_by<
-        boost::multi_index::hashed_unique<
-          boost::multi_index::tag<route_by_idx>,
-          routeIdIdx>,
+        boost::multi_index::hashed_unique<boost::multi_index::tag<route_by_idx>,
+                                          routeIdIdx>,
         boost::multi_index::hashed_non_unique<
-          boost::multi_index::tag<route_by_order_idx>,
-          routeOrderIdIdx>,
+            boost::multi_index::tag<route_by_order_idx>, routeOrderIdIdx>,
         boost::multi_index::hashed_unique<
-          boost::multi_index::tag<route_by_status_order_idx>,
-          statusRouteIdsForOrderIdIdx>>>;
+            boost::multi_index::tag<route_by_status_order_idx>,
+            statusRouteIdsForOrderIdIdx>>>;
 
 } // namespace containers
 } // namespace omscompare
