@@ -39,7 +39,7 @@ public:
   const std::vector<std::string> OpStr{"UNKNOWN", "FIND", "ADD", "UPDATE",
                                        "DELETE"};
 
-  Metrics(const std::string &container);
+  Metrics();
 
   void add(Operation &oper, uint64_t count, double timetaken);
   void status();
@@ -47,7 +47,6 @@ public:
   Counter &counter() { return counter_; }
 
 private:
-  std::string container;
   std::map<Operation, std::list<Unit>> units;
   Counter counter_;
 };

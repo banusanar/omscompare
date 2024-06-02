@@ -12,6 +12,7 @@ namespace omscompare {
 namespace containers {
 
 struct order_by_idx {};
+struct order_by_clord_idx {};
 struct order_by_parent_idx {};
 struct order_by_basket_idx {};
 
@@ -19,6 +20,13 @@ struct orderIdIdx {
   typedef std::size_t result_type;
   result_type operator()(const types::Order &entry) const {
     return boost::hash_value(entry.id);
+  }
+};
+
+struct globalClordIdIdx {
+  typedef std::size_t result_type;
+  result_type operator()(const types::Order &entry) const {
+    return boost::hash_value(entry.clord_id);
   }
 };
 
@@ -44,6 +52,8 @@ using Order = boost::multi_index_container<
     boost::multi_index::indexed_by<
         boost::multi_index::hashed_unique<boost::multi_index::tag<order_by_idx>,
                                           orderIdIdx>,
+        boost::multi_index::hashed_unique<boost::multi_index::tag<order_by_clord_idx>,
+                                          globalClordIdIdx>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<order_by_parent_idx>, parentIdOrderIdx>,
         boost::multi_index::hashed_non_unique<

@@ -4,6 +4,7 @@
 #include <boost/container_hash/detail/hash_integral.hpp>
 #include <boost/container_hash/hash.hpp>
 #include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/tag.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index_container_fwd.hpp>
 
@@ -11,6 +12,9 @@
 
 namespace omscompare {
 namespace containers {
+
+struct basket_by_idx{};
+struct basket_by_name_idx{};
 
 struct basketIdIdx {
   typedef std::size_t result_type;
@@ -28,8 +32,10 @@ struct basketNameIdx {
 
 using Basket = boost::multi_index_container<
     types::Basket, boost::multi_index::indexed_by<
-                       boost::multi_index::hashed_unique<basketIdIdx>,
-                       boost::multi_index::hashed_non_unique<basketNameIdx>>>;
+                       boost::multi_index::hashed_unique<boost::multi_index::tag<basket_by_idx>,
+                        basketIdIdx>,
+                       boost::multi_index::hashed_non_unique<boost::multi_index::tag<basket_by_name_idx>,
+                       basketNameIdx>>>;
 
 } // namespace containers
 } // namespace omscompare

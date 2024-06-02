@@ -27,8 +27,7 @@ public:
   tl::expected<types::Fill, Error> findFill(types::IdType orderid);
 
   // empty vector could mean no values or errors??
-  std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id,
-                                                  bool active_only);
+  std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id);
   std::vector<types::Route>
   findRoutesForOrderId(types::IdType order_id, types::RouteStatus status_match);
   std::vector<types::Fill> findFillsForRouteId(types::IdType route_id,

@@ -21,7 +21,7 @@ std::optional<Unit> Counter::stop_watch() {
   return {};
 }
 
-Metrics::Metrics(const std::string &container) : container(container) {
+Metrics::Metrics() {
   units.insert({Operation::ADD, {}});
   units.insert({Operation::UPDATE, {}});
   units.insert({Operation::DELETE, {}});
@@ -32,7 +32,6 @@ void Metrics::add(Operation &oper, uint64_t count, double timetaken) {
 }
 
 void Metrics::status() {
-  std::cout << "Container: " << container << std::endl;
   for (auto [op, times] : units) {
     std::cout << OpStr[int(op)] << " : (" << times.front().count << ", "
               << times.front().timetaken << ")" << std::endl;

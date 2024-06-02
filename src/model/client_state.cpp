@@ -1,5 +1,9 @@
+#include "basket.h"
+#include "fill.h"
+#include "idtype.h"
 #include "metrics.h"
 #include "order.h"
+#include "route.h"
 #include <bits/ranges_base.h>
 #include <client_state.h>
 #include <tl/expected.hpp>
@@ -11,10 +15,10 @@ using namespace containers;
 
 ClientState::ClientState()
     : baskets_(), orders_(), routes_(), fills_(), metrics_() {
-  metrics_.emplace("basket", Metrics{"basket"});
-  metrics_.emplace("order", Metrics{"order"});
-  metrics_.emplace("route", Metrics{"route"});
-  metrics_.emplace("fill", Metrics{"fill"});
+  metrics_.emplace("basket", Metrics{});
+  metrics_.emplace("order", Metrics{});
+  metrics_.emplace("route", Metrics{});
+  metrics_.emplace("fill", Metrics{});
 }
 
 ClientState::Scope::Scope(Metrics &m, Metrics::Operation oper)
@@ -40,55 +44,161 @@ ClientState::findOrder(types::IdType orderid) {
 }
 
 tl::expected<types::Basket, Error>
-ClientState::findBasket(types::IdType orderid) {
-  return {};
+ClientState::findBasket(types::IdType basketid) {
+  Scope a{metrics_["basket"], Metrics::Operation::FIND};
+  auto x = baskets_.get<basket_by_idx>().find(basketid);
+  if (x == baskets_.end()) {
+    return tl::make_unexpected(Error{.what = "Invalid basketid"});
+  }
+  return {*x};
 }
+
 tl::expected<types::Route, Error>
-ClientState::findRoute(types::IdType orderid) {
-  return {};
+ClientState::findRoute(types::IdType routeid) {
+  Scope a{metrics_["route"], Metrics::Operation::FIND};
+  auto x = routes_.get<route_by_idx>().find(routeid);
+  if (x == routes_.end()) {
+    return tl::make_unexpected(Error{.what = "Invalid routeid"});
+  }
+  return {*x};
 }
-tl::expected<types::Fill, Error> ClientState::findFill(types::IdType orderid) {
-  return {};
+
+tl::expected<types::Fill, Error>
+ClientState::findFill(types::IdType fillid) {
+  Scope a{metrics_["fill"], Metrics::Operation::FIND};
+  auto x = fills_.get<fill_by_idx>().find(fillid);
+  if (x == fills_.end()) {
+    return tl::make_unexpected(Error{.what = "Invalid fillid"});
+  }
+  return {*x};
 }
 
 // empty vector could mean no values or errors??
+
 std::vector<types::Order>
-ClientState::findOrdersForBasketId(types::IdType basket_id, bool active_only) {
-  return {};
-}
-std::vector<types::Route>
-ClientState::findRoutesForOrderId(types::IdType order_id,
-                                  types::RouteStatus status_match) {
-  return {};
-}
-std::vector<types::Fill>
-ClientState::findFillsForRouteId(types::IdType route_id,
-                                 types::ExecStatus status_match) {
-  return {};
-}
-std::vector<types::Fill>
-ClientState::findFillsForOrderId(types::IdType basket_id,
-                                 types::ExecStatus status_match) {
-  return {};
+ClientState::findOrdersForBasketId(types::IdType basket_id) {
+  Scope a{metrics_["order"], Metrics::Operation::FIND};
+  auto [start, end] = orders_.get<order_by_basket_idx>().equal_range(basket_id);
+  if (start == end ) {
+    return {};
+  }
+  std::vector<types::Order> result{};
+  result.reserve(std::distance(start, end));
+  for( ; start != end; start++) {
+    result.emplace_back(*start);
+  }
+  return result;
 }
 
-tl::expected<types::IdType, Error> addOrder(types::Order &&) { return {}; }
-tl::expected<types::IdType, Error> addRouteForOrder(types::Route &&,
+std::vector<types::Route>
+ClientState::findRoutesForOrderId(types::IdType order_id, types::RouteStatus status_match) {
+  Scope a{metrics_["route"], Metrics::Operation::FIND};
+  auto [start, end] = routes_.get<route_by_status_order_idx>().equal_range(
+      std::make_tuple(status_match, order_id));
+  if (start == end ) {
+    return {};
+  }
+  std::vector<types::Route> result{};
+  result.reserve(std::distance(start, end));
+  for( ; start != end; start++) {
+    result.emplace_back(*start);
+  }
+  return result;
+}
+
+std::vector<types::Fill>
+ClientState::findFillsForRouteId(types::IdType route_id, types::ExecStatus status_match) {
+  Scope a{metrics_["fill"], Metrics::Operation::FIND};
+  auto [start, end] = fills_.get<fill_by_route_idx>().equal_range(route_id);
+  if (start == end ) {
+    return {};
+  }
+  std::vector<types::Fill> result{};
+  result.reserve(std::distance(start, end));
+  for( ; start != end; start++) {
+    if(start->status == status_match)
+      result.emplace_back(*start);
+  }
+  return result;
+}
+
+std::vector<types::Fill>
+ClientState::findFillsForOrderId(types::IdType order_id, types::ExecStatus status_match) {
+  Scope a{metrics_["fill"], Metrics::Operation::FIND};
+  auto [start, end] = fills_.get<fill_by_status_order_idx>().equal_range(
+      std::make_tuple(status_match, order_id));
+  if (start == end ) {
+    return {};
+  }
+  std::vector<types::Fill> result{};
+  result.reserve(std::distance(start, end));
+  for( ; start != end; start++) {
+    result.emplace_back(*start);
+  }
+  return result;
+}
+
+// There is no more error checking here. All error checking happens before this API
+
+tl::expected<types::IdType, Error> ClientState::addOrder(types::Order &&order) { 
+  Scope a{metrics_["order"], Metrics::Operation::ADD};
+  auto [iter, result] = orders_.insert(order);
+  if (!result) 
+    return tl::make_unexpected(Error{.what = "Order insert failed"});
+
+  return {iter->id}; 
+}
+
+tl::expected<types::IdType, Error> ClientState::addRouteForOrder(types::Route && route,
                                                     types::IdType order_id) {
-  return {};
+  Scope a{metrics_["route"], Metrics::Operation::ADD};
+  return findOrder(order_id)
+    .and_then([&](types::Order) -> tl::expected<types::IdType, Error>{
+      auto [iter, result] = routes_.insert(route);
+      if (!result) 
+        return tl::make_unexpected(Error{.what = "Found Order. Route insert failed"});
+      return {iter->id};
+    });
 }
-tl::expected<types::IdType, Error> addOrderForBasket(types::Order &&,
+
+tl::expected<types::IdType, Error> ClientState::addOrderForBasket(types::Order && order,
                                                      types::IdType basket_id) {
-  return {};
+  Scope a{metrics_["basket"], Metrics::Operation::ADD};
+  return findBasket(basket_id)
+    .and_then([&](types::Basket) -> tl::expected<types::IdType, Error>{
+      auto [iter, result] = orders_.insert(order);
+      if (!result) 
+        return tl::make_unexpected(Error{.what = "Found Basket. Order insert failed"});
+      return {iter->id};
+    });
 }
-tl::expected<types::IdType, Error> addFillForRoute(types::Fill &&,
+
+tl::expected<types::IdType, Error> ClientState::addFillForRoute(types::Fill && fill,
                                                    types::IdType route_id) {
-  return {};
+  Scope a{metrics_["fill"], Metrics::Operation::ADD};
+  return findRoute(route_id)
+    .and_then([&](types::Route) -> tl::expected<types::IdType, Error>{
+      auto [iter, result] = fills_.insert(fill);
+      if (!result) 
+        return tl::make_unexpected(Error{.what = "Found Route. Fill insert failed"});
+      return {iter->id};
+    });
 }
+
 tl::expected<types::IdType, Error>
-addFillForOrderRoute(types::Fill &&, types::IdType route_id,
+ClientState::addFillForOrderRoute(types::Fill &&fill, types::IdType route_id,
                      types::IdType order_id) {
-  return {};
+  Scope a{metrics_["fill"], Metrics::Operation::ADD};
+  return findOrder(order_id)
+    .and_then([&](types::Order) -> tl::expected<types::IdType, Error>{
+      return findRoute(route_id)
+        .and_then([&](types::Route) -> tl::expected<types::IdType, Error>{
+          auto [iter, result] = fills_.insert(fill);
+          if (!result) 
+            return tl::make_unexpected(Error{.what = "Found Route. Fill insert failed"});
+          return {iter->id};
+        });
+    });
 }
 
 tl::expected<void, Error> updateOrder(types::Order &&) { return {}; }
