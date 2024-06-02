@@ -14,7 +14,8 @@ add_subdirectory(src/containers/types)
 add_subdirectory(src/containers)
 add_subdirectory(src/sqlite)
 add_subdirectory(src/model)
-add_executable(omscompare app/main.cpp)
+add_subdirectory(src/app)
+add_executable(omscompare src/app/main.cpp)
 
 target_include_directories(omscompare PUBLIC Model)
 

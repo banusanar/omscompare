@@ -2,7 +2,6 @@
 add_library(Model STATIC)
 
 target_sources(Model PRIVATE 
-    client.cpp
     client_state.cpp
 )
 
@@ -10,7 +9,6 @@ target_sources(Model
     PUBLIC 
     FILE_SET publicheaders 
     TYPE HEADERS FILES
-    client.h
     client_state.h
 )
 

@@ -34,6 +34,7 @@ struct Route {
   IdType order_id;
   FixClOrdIdType clord_id; // outgoing
   RouteStatus status;
+  std::string broker;
   std::byte data[1024];
 };
 

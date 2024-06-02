@@ -2,6 +2,8 @@
 #define OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
 
 #include "basket.h"
+#include "idtype.h"
+#include "types/error.h"
 #include "fill.h"
 #include "metrics.h"
 #include "order.h"
@@ -13,15 +15,14 @@
 namespace omscompare {
 namespace model {
 
-struct Error {
-  int rcode{0};
-  std::string what;
-};
 
+using Error = omscompare::types::Error; 
 class ClientState {
 public:
+
   ClientState();
   tl::expected<types::Order, Error> findOrder(types::IdType orderid);
+  tl::expected<types::Order, Error> findOrderByClordId(types::FixClOrdIdType clordid);
   tl::expected<types::Basket, Error> findBasket(types::IdType orderid);
   tl::expected<types::Route, Error> findRoute(types::IdType orderid);
   tl::expected<types::Fill, Error> findFill(types::IdType orderid);

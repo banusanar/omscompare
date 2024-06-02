@@ -43,6 +43,17 @@ ClientState::findOrder(types::IdType orderid) {
   return {*x};
 }
 
+tl::expected<types::Order, Error> ClientState::findOrderByClordId(types::FixClOrdIdType clordid)
+{
+  Scope a{metrics_["order"], Metrics::Operation::FIND};
+  auto [x, y] = orders_.get<order_by_clord_idx>().equal_range(clordid);
+  if (x == y) {
+    return tl::make_unexpected(Error{.what = "Invalid orderid"});
+  }
+  return {*x};
+
+}
+
 tl::expected<types::Basket, Error>
 ClientState::findBasket(types::IdType basketid) {
   Scope a{metrics_["basket"], Metrics::Operation::FIND};
@@ -208,16 +219,80 @@ ClientState::addFillForOrderRoute(types::Fill &&fill, types::IdType route_id,
       });
 }
 
-tl::expected<void, Error> updateOrder(types::Order &&) { return {}; }
-tl::expected<void, Error> updateRouteForOrder(types::Route &&) { return {}; }
-tl::expected<void, Error> updateFillForRoute(types::Fill &&) { return {}; }
+tl::expected<void, Error> ClientState::updateOrder(types::Order &&order) {
+  Scope a{metrics_["order"], Metrics::Operation::UPDATE};
+  return findOrder(order.id).and_then(
+      [&](types::Order) -> tl::expected<void, Error> {
+        auto [iter, result] = orders_.insert(order);
+        if (result) // This cannot be a new element. result is false
+          return tl::make_unexpected(Error{.what = "Update failed. "});
+        return {};
+      });
+}
 
-tl::expected<void, Error> deleteBasket(types::IdType basket_id) { return {}; }
-tl::expected<void, Error> deleteOrder(types::IdType order_id) { return {}; }
-tl::expected<void, Error> deleteRouteForOrder(types::IdType route_id) {
+tl::expected<void, Error>
+ClientState::updateRouteForOrder(types::Route &&route) {
+  Scope a{metrics_["route"], Metrics::Operation::UPDATE};
+  return findRoute(route.id).and_then(
+      [&](types::Route) -> tl::expected<void, Error> {
+        auto [iter, result] = routes_.insert(route);
+        if (result)
+          return tl::make_unexpected(Error{.what = "Update failed. "});
+        return {};
+      });
+}
+
+tl::expected<void, Error> ClientState::updateFillForRoute(types::Fill &&fill) {
+  Scope a{metrics_["fill"], Metrics::Operation::UPDATE};
+  return findFill(fill.id).and_then(
+      [&](types::Fill) -> tl::expected<void, Error> {
+        auto [iter, result] = fills_.insert(fill);
+        if (result)
+          return tl::make_unexpected(Error{.what = "Update failed. "});
+        return {};
+      });
+}
+
+tl::expected<void, Error> ClientState::deleteBasket(types::IdType basket_id) {
+  Scope a{metrics_["basket"], Metrics::Operation::DELETE};
+  auto x = baskets_.get<basket_by_idx>().find(basket_id);
+  if (x == baskets_.end()) {
+    return tl::make_unexpected(
+        Error{.what = "Invalid basketid. Cannot delete"});
+  }
+  baskets_.erase(x);
   return {};
 }
-tl::expected<void, Error> deleteFillForRoute(types::IdType fill_id) {
+
+tl::expected<void, Error> ClientState::deleteOrder(types::IdType order_id) {
+  Scope a{metrics_["order"], Metrics::Operation::DELETE};
+  auto x = orders_.get<order_by_idx>().find(order_id);
+  if (x == orders_.end()) {
+    return tl::make_unexpected(Error{.what = "Invalid orderid. Cannot delete"});
+  }
+  orders_.erase(x);
+  return {};
+}
+
+tl::expected<void, Error>
+ClientState::deleteRouteForOrder(types::IdType route_id) {
+  Scope a{metrics_["route"], Metrics::Operation::DELETE};
+  auto x = routes_.get<route_by_idx>().find(route_id);
+  if (x == routes_.end()) {
+    return tl::make_unexpected(Error{.what = "Invalid routeid. Cannot delete"});
+  }
+  routes_.erase(x);
+  return {};
+}
+
+tl::expected<void, Error>
+ClientState::deleteFillForRoute(types::IdType fill_id) {
+  Scope a{metrics_["fill"], Metrics::Operation::DELETE};
+  auto x = fills_.get<fill_by_idx>().find(fill_id);
+  if (x == fills_.end()) {
+    return tl::make_unexpected(Error{.what = "Invalid fill_id. Cannot delete"});
+  }
+  fills_.erase(x);
   return {};
 }
 
