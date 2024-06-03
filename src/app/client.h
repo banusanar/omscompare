@@ -2,19 +2,20 @@
 #define OMSCOMPARE_OMSMODEL_CLIENT_H_
 
 #include <cstdint>
+#include <idtype.h>
 #include <memory>
 #include <mutex>
 
 namespace omscompare {
 namespace model {
-
 class ClientState;
+}
 
-using ClientIdType = uint64_t;
+namespace app {
 
 class Client {
 public:
-  explicit Client(ClientIdType clientid)
+  explicit Client(types::ClientIdType clientid)
       : client_id_(clientid), is_ready_(false), state_lock_(), state_() {}
 
   Client() = delete;
@@ -28,17 +29,16 @@ public:
   bool is_ready() { return is_ready_; };
   void status();
 
-  template <typename REQUEST, typename RESPONSE>
-  std::unique_ptr<RESPONSE> processRequest(std::shared_ptr<REQUEST> request);
+  friend class WorkFlow;
 
 private:
-  ClientIdType client_id_;
+  types::ClientIdType client_id_;
   bool is_ready_;
   std::mutex state_lock_;
-  std::shared_ptr<ClientState> state_;
+  std::shared_ptr<model::ClientState> state_;
 };
 
-} // namespace model
+} // namespace app
 } // namespace omscompare
 
 #endif

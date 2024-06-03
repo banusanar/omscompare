@@ -11,6 +11,7 @@
 namespace omscompare {
 namespace model {
 
+using Error = types::Error;
 using namespace containers;
 
 ClientState::ClientState()
@@ -43,15 +44,14 @@ ClientState::findOrder(types::IdType orderid) {
   return {*x};
 }
 
-tl::expected<types::Order, Error> ClientState::findOrderByClordId(types::FixClOrdIdType clordid)
-{
+tl::expected<types::Order, Error>
+ClientState::findOrderByClordId(types::FixClOrdIdType clordid) {
   Scope a{metrics_["order"], Metrics::Operation::FIND};
   auto [x, y] = orders_.get<order_by_clord_idx>().equal_range(clordid);
   if (x == y) {
     return tl::make_unexpected(Error{.what = "Invalid orderid"});
   }
   return {*x};
-
 }
 
 tl::expected<types::Basket, Error>
@@ -153,6 +153,16 @@ ClientState::findFillsForOrderId(types::IdType order_id,
 
 // There is no more error checking here. All error checking happens before this
 // API
+
+tl::expected<types::IdType, types::Error>
+ClientState::addBasket(types::Basket &&basket) {
+  Scope a{metrics_["basket"], Metrics::Operation::ADD};
+  auto [iter, result] = baskets_.insert(basket);
+  if (!result)
+    return tl::make_unexpected(Error{.what = "Basket insert failed"});
+
+  return {iter->id};
+}
 
 tl::expected<types::IdType, Error> ClientState::addOrder(types::Order &&order) {
   Scope a{metrics_["order"], Metrics::Operation::ADD};

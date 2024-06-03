@@ -6,9 +6,20 @@
 namespace omscompare {
 namespace types {
 
+using ClientIdType = uint64_t;
 using IdType = uint64_t;
 using FixClOrdIdType = std::string;
 using FixExecIdType = std::string;
+
+IdType getNewBasketIdForClient(ClientIdType);
+IdType getNewOrderIdForClient(ClientIdType);
+FixClOrdIdType getNewClordIdForClient(ClientIdType);
+
+IdType getNewRouteIdForClient(ClientIdType);
+FixClOrdIdType getNewRouteClordIdForClient(ClientIdType);
+
+IdType getNewFillIdForClient(ClientIdType);
+FixExecIdType getNewExecIdForClient(ClientIdType client_id, IdType route_id);
 
 } // namespace types
 } // namespace omscompare
