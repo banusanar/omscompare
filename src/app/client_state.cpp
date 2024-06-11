@@ -38,7 +38,7 @@ tl::expected<types::Order, Error>
 ClientState::findOrder(types::IdType orderid) {
   Scope a{metrics_["order"], Metrics::Operation::FIND};
   auto x = orders_.get<order_by_idx>().find(orderid);
-  if (x == orders_.end()) {
+  if (x == orders_.get<order_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid orderid"});
   }
   return {*x};
@@ -47,7 +47,7 @@ ClientState::findOrder(types::IdType orderid) {
 tl::expected<types::Order, Error>
 ClientState::findOrderByClordId(types::FixClOrdIdType clordid) {
   Scope a{metrics_["order"], Metrics::Operation::FIND};
-  auto x = orders_.get<order_by_clord_idx>().find(clordid);
+  OrderByClordIdType::iterator x = orders_.get<order_by_clord_idx>().find(clordid);
   if (x == orders_.get<order_by_clord_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid orderid"});
   }
@@ -57,8 +57,8 @@ ClientState::findOrderByClordId(types::FixClOrdIdType clordid) {
 tl::expected<types::Basket, Error>
 ClientState::findBasket(types::IdType basketid) {
   Scope a{metrics_["basket"], Metrics::Operation::FIND};
-  auto x = baskets_.get<basket_by_idx>().find(basketid);
-  if (x == baskets_.end()) {
+  BasketByIdxType::iterator x = baskets_.get<basket_by_idx>().find(basketid);
+  if (x == baskets_.get<basket_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid basketid"});
   }
   return {*x};
@@ -67,8 +67,8 @@ ClientState::findBasket(types::IdType basketid) {
 tl::expected<types::Route, Error>
 ClientState::findRoute(types::IdType routeid) {
   Scope a{metrics_["route"], Metrics::Operation::FIND};
-  auto x = routes_.get<route_by_idx>().find(routeid);
-  if (x == routes_.end()) {
+  RouteByIdxType::iterator x = routes_.get<route_by_idx>().find(routeid);
+  if (x == routes_.get<route_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid routeid"});
   }
   return {*x};
@@ -77,7 +77,7 @@ ClientState::findRoute(types::IdType routeid) {
 tl::expected<types::Route, Error>
 ClientState::findRouteByClordId(types::FixClOrdIdType clordid) {
   Scope a{metrics_["route"], Metrics::Operation::FIND};
-  auto x = routes_.get<route_by_clord_idx>().find(clordid);
+  RouteByClordIdType::iterator x = routes_.get<route_by_clord_idx>().find(clordid);
   if (x == routes_.get<route_by_clord_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid routeid"});
   }
@@ -86,8 +86,8 @@ ClientState::findRouteByClordId(types::FixClOrdIdType clordid) {
 
 tl::expected<types::Fill, Error> ClientState::findFill(types::IdType fillid) {
   Scope a{metrics_["fill"], Metrics::Operation::FIND};
-  auto x = fills_.get<fill_by_idx>().find(fillid);
-  if (x == fills_.end()) {
+  FillByIdxType::iterator x = fills_.get<fill_by_idx>().find(fillid);
+  if (x == fills_.get<fill_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid fillid"});
   }
   return {*x};
@@ -98,7 +98,8 @@ tl::expected<types::Fill, Error> ClientState::findFill(types::IdType fillid) {
 std::vector<types::Order>
 ClientState::findOrdersForBasketId(types::IdType basket_id) {
   Scope a{metrics_["order"], Metrics::Operation::FIND};
-  auto [start, end] = orders_.get<order_by_basket_idx>().equal_range(basket_id);
+  std::pair<OrderByBasketIdType::iterator, OrderByBasketIdType::iterator> x = orders_.get<order_by_basket_idx>().equal_range(basket_id);
+  auto start = std::get<0>(x); auto end = std::get<1>(x);
   if (start == end) {
     return {};
   }
@@ -114,8 +115,13 @@ std::vector<types::Route>
 ClientState::findRoutesForOrderId(types::IdType order_id,
                                   types::RouteStatus status_match) {
   Scope a{metrics_["route"], Metrics::Operation::FIND};
-  auto [start, end] = routes_.get<route_by_status_order_idx>().equal_range(
+  using RouteStatusPairType = std::pair<
+    Route::index<route_by_status_order_idx>::type::iterator,
+    Route::index<route_by_status_order_idx>::type::iterator>;
+
+  RouteStatusPairType x = routes_.get<route_by_status_order_idx>().equal_range(
       std::make_tuple(status_match, order_id));
+  auto start = std::get<0>(x); auto end = std::get<1>(x);
   if (start == end) {
     return {};
   }

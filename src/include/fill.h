@@ -1,9 +1,12 @@
 #ifndef OMSCOMPARE_OMSB_FILL_H_
 #define OMSCOMPARE_OMSB_FILL_H_
 
+#include "types/idtype.h"
 #include <boost/container_hash/detail/hash_integral.hpp>
 #include <boost/container_hash/hash.hpp>
 #include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index_container_fwd.hpp>
 
@@ -19,75 +22,36 @@ struct fill_by_order_idx {};
 struct fill_by_status_order_idx {};
 struct fill_by_status_order_route_idx {};
 
-struct fillIdIdx {
-  typedef std::size_t result_type;
-  result_type operator()(const types::Fill &entry) const {
-    return boost::hash_value(entry.id);
-  }
-};
-
-struct fillExecIdx {
-  typedef std::size_t result_type;
-  result_type operator()(const types::Fill &entry) const {
-    return boost::hash_value(entry.exec_id);
-  }
-};
-
-struct fillRouteIdIdx {
-  typedef std::size_t result_type;
-  result_type operator()(const types::Fill &entry) const {
-    return boost::hash_value(entry.route_id);
-  }
-};
-
-struct fillOrderIdIdx {
-  typedef std::size_t result_type;
-  result_type operator()(const types::Fill &entry) const {
-    return boost::hash_value(entry.order_id);
-  }
-};
-
-struct statusFillIdsForOrderIdIdx {
-  typedef std::size_t result_type;
-  result_type operator()(const types::Fill &entry) const {
-    result_type seed = 0;
-    boost::hash_combine(seed, entry.status);
-    boost::hash_combine(seed, entry.order_id);
-    boost::hash_combine(seed, entry.id);
-    return seed;
-  }
-};
-
-struct statusFillIdsForRouteIdIdx {
-  typedef std::size_t result_type;
-  result_type operator()(const types::Fill &entry) const {
-    result_type seed = 0;
-    boost::hash_combine(seed, entry.status);
-    boost::hash_combine(seed, entry.order_id);
-    boost::hash_combine(seed, entry.route_id);
-    boost::hash_combine(seed, entry.id);
-    return seed;
-  }
-};
-
 using Fill = boost::multi_index_container<
     types::Fill,
     boost::multi_index::indexed_by<
         boost::multi_index::hashed_unique<boost::multi_index::tag<fill_by_idx>,
-                                          fillIdIdx>,
+            boost::multi_index::member<types::Fill,types::IdType,&types::Fill::id>>,
         boost::multi_index::hashed_unique<
-            boost::multi_index::tag<fill_by_exec_idx>, fillExecIdx>,
+            boost::multi_index::tag<fill_by_exec_idx>, 
+            boost::multi_index::member<types::Fill,types::FixClOrdIdType,&types::Fill::exec_id>>,
         boost::multi_index::hashed_non_unique<
-            boost::multi_index::tag<fill_by_route_idx>, fillRouteIdIdx>,
+            boost::multi_index::tag<fill_by_route_idx>, 
+            boost::multi_index::member<types::Fill,types::IdType,&types::Fill::route_id>>,
         boost::multi_index::hashed_non_unique<
-            boost::multi_index::tag<fill_by_order_idx>, fillOrderIdIdx>,
-        boost::multi_index::hashed_unique<
+            boost::multi_index::tag<fill_by_order_idx>,
+            boost::multi_index::member<types::Fill,types::IdType,&types::Fill::order_id>>,
+        boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<fill_by_status_order_idx>,
-            statusFillIdsForRouteIdIdx>,
-        boost::multi_index::hashed_unique<
+            boost::multi_index::composite_key<types::Fill, 
+              boost::multi_index::member<types::Fill,types::ExecStatus,&types::Fill::status>,
+              boost::multi_index::member<types::Fill,types::IdType,&types::Fill::order_id>>>,
+        boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<fill_by_status_order_route_idx>,
-            statusFillIdsForOrderIdIdx>>>;
+            boost::multi_index::composite_key<types::Fill, 
+              boost::multi_index::member<types::Fill,types::ExecStatus,&types::Fill::status>,
+              boost::multi_index::member<types::Fill,types::IdType,&types::Fill::order_id>,
+              boost::multi_index::member<types::Fill,types::IdType,&types::Fill::route_id>> >>>;
 
+using FillByIdxType = Fill::index<fill_by_idx>::type;
+using FillByExecIdType = Fill::index<fill_by_exec_idx>::type;
+using FillByOrderIdType = Fill::index<fill_by_order_idx>::type;
+using FillByRouteIdType = Fill::index<fill_by_route_idx>::type;
 } // namespace containers
 } // namespace omscompare
 
