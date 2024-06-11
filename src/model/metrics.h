@@ -22,20 +22,20 @@ struct Unit {
 class Counter {
 public:
   Counter()
-      : count(0), total_time_since_count(0.0), begin_start_of_operation() {}
+       : count(0), total_time_since_count(0.0), begin_start_of_operation() {}
 
   void start_watch();
   std::optional<Unit> stop_watch();
 
 private:
-  std::atomic<uint64_t> count;
-  double total_time_since_count;
+  uint64_t count{0};
+  double total_time_since_count{0.0};
   std::chrono::steady_clock::time_point begin_start_of_operation;
 };
 
 class Metrics {
 public:
-  enum class Operation { UNKNOWN, FIND, ADD, UPDATE, DELETE };
+  enum class Operation : int { UNKNOWN, FIND, ADD, UPDATE, DELETE };
   const std::vector<std::string> OpStr{"UNKNOWN", "FIND", "ADD", "UPDATE",
                                        "DELETE"};
 
@@ -47,7 +47,7 @@ public:
   Counter &counter() { return counter_; }
 
 private:
-  std::map<Operation, std::list<Unit>> units;
+  std::map<Operation, std::list<Unit>> units_;
   Counter counter_;
 };
 

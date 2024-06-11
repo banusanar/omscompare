@@ -14,7 +14,7 @@ std::optional<Unit> Counter::stop_watch() {
           .count();
   count++;
   if (count % 100) {
-    auto result = Unit{count, total_time_since_count};
+    auto result = Unit{ .count = count, .timetaken = total_time_since_count};
     total_time_since_count = 0;
     return {result};
   }
@@ -22,17 +22,17 @@ std::optional<Unit> Counter::stop_watch() {
 }
 
 Metrics::Metrics() {
-  units.insert({Operation::ADD, {}});
-  units.insert({Operation::UPDATE, {}});
-  units.insert({Operation::DELETE, {}});
+  units_.insert({Operation::ADD, {}});
+  units_.insert({Operation::UPDATE, {}});
+  units_.insert({Operation::DELETE, {}});
 }
 
 void Metrics::add(Operation &oper, uint64_t count, double timetaken) {
-  units[oper].emplace_back(count, timetaken);
+  units_[oper].emplace_back(Unit{.count = count, .timetaken = timetaken});
 }
 
 void Metrics::status() {
-  for (auto [op, times] : units) {
+  for (auto [op, times] : units_) {
     std::cout << OpStr[int(op)] << " : (" << times.front().count << ", "
               << times.front().timetaken << ")" << std::endl;
   }

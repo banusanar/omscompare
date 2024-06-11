@@ -1,14 +1,18 @@
+set(HEADERS 
+    db.h)
 
-add_library(Sqlite INTERFACE
-    db.h 
-)
+add_custom_target(SqliteHeaders ALL
+    COMMENT "Copying sqlite headers")
 
-install(TARGETS Sqlite EXPORT SqliteTargets 
-    INCLUDES DESTINATION include
-)
+foreach(hdr ${HEADERS})
+    add_custom_command(
+        TARGET SqliteHeaders
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${hdr} ${CMAKE_BINARY_DIR}/include"
+    )
+endforeach(hdr) 
 
-install(EXPORT SqliteTargets
-    FILE SqliteTargets.cmake 
-    NAMESPACE Omscompare::
-    DESTINATION lib/cmake/omscompare
+add_dependencies(omslib SqliteHeaders)
+
+target_sources(omslib PRIVATE 
+    db.cpp
 )

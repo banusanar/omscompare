@@ -2,7 +2,7 @@
 #ifndef OMSCOMPARE_OMSTYPES_ORDER_H_
 #define OMSCOMPARE_OMSTYPES_ORDER_H_
 
-#include "idtype.h"
+#include <types/idtype.h>
 #include <cstddef>
 #include <cstdint>
 #include <optional>

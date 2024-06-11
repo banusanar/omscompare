@@ -1,4 +1,5 @@
-
+#ifndef OMSCOMPARE_OMSTYPES_ERROR_H_
+#define OMSCOMPARE_OMSTYPES_ERROR_H_
 #include <string>
 
 namespace omscompare {
@@ -10,3 +11,5 @@ struct Error {
 };
 } // namespace types
 } // namespace omscompare
+
+#endif

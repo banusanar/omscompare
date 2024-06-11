@@ -1,7 +1,7 @@
 #ifndef OMSCOMPARE_OMSTYPES_ROUTE_H_
 #define OMSCOMPARE_OMSTYPES_ROUTE_H_
 
-#include "idtype.h"
+#include <types/idtype.h>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -26,7 +26,8 @@ enum class RouteStatus : int8_t {
   EXPIRED = 'C',
   ACCEPTED_FOR_BIDDING = 'D',
   PENDING_REPLACE = 'E',
-  SENT_TO_BROKER = 99
+  SENT_TO_BROKER = 99,
+  BROKER_ACKNOWLEDGE = 100
 };
 
 struct Route {

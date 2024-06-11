@@ -8,7 +8,7 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index_container_fwd.hpp>
 
-#include "types/basket.h"
+#include <types/basket.h>
 
 namespace omscompare {
 namespace containers {

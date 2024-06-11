@@ -2,7 +2,7 @@
 #define OMSCOMPARE_OMSMODEL_CLIENT_H_
 
 #include <cstdint>
-#include <idtype.h>
+#include <types/idtype.h>
 #include <memory>
 #include <mutex>
 

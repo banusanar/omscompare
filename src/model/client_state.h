@@ -1,13 +1,13 @@
 #ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
 #define OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
 
-#include "basket.h"
-#include "fill.h"
-#include "idtype.h"
-#include "metrics.h"
-#include "order.h"
-#include "route.h"
-#include <error.h>
+#include <basket.h>
+#include <fill.h>
+#include <types/idtype.h>
+#include <metrics.h>
+#include <order.h>
+#include <route.h>
+#include <types/error.h>
 #include <map>
 #include <string>
 #include <tl/expected.hpp>
@@ -23,6 +23,8 @@ public:
   findOrderByClordId(types::FixClOrdIdType clordid);
   tl::expected<types::Basket, types::Error> findBasket(types::IdType orderid);
   tl::expected<types::Route, types::Error> findRoute(types::IdType orderid);
+  tl::expected<types::Route, types::Error>
+  findRouteByClordId(types::FixClOrdIdType clordid);
   tl::expected<types::Fill, types::Error> findFill(types::IdType orderid);
 
   // empty vector could mean no values or errors??

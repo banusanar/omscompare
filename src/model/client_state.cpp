@@ -1,9 +1,9 @@
-#include "basket.h"
-#include "fill.h"
-#include "idtype.h"
-#include "metrics.h"
-#include "order.h"
-#include "route.h"
+#include <basket.h>
+#include <fill.h>
+#include <types/idtype.h>
+#include <metrics.h>
+#include <order.h>
+#include <route.h>
 #include <bits/ranges_base.h>
 #include <client_state.h>
 #include <tl/expected.hpp>
@@ -47,8 +47,8 @@ ClientState::findOrder(types::IdType orderid) {
 tl::expected<types::Order, Error>
 ClientState::findOrderByClordId(types::FixClOrdIdType clordid) {
   Scope a{metrics_["order"], Metrics::Operation::FIND};
-  auto [x, y] = orders_.get<order_by_clord_idx>().equal_range(clordid);
-  if (x == y) {
+  auto x = orders_.get<order_by_clord_idx>().find(clordid);
+  if (x == orders_.get<order_by_clord_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid orderid"});
   }
   return {*x};
@@ -69,6 +69,16 @@ ClientState::findRoute(types::IdType routeid) {
   Scope a{metrics_["route"], Metrics::Operation::FIND};
   auto x = routes_.get<route_by_idx>().find(routeid);
   if (x == routes_.end()) {
+    return tl::make_unexpected(Error{.what = "Invalid routeid"});
+  }
+  return {*x};
+}
+
+tl::expected<types::Route, Error>
+ClientState::findRouteByClordId(types::FixClOrdIdType clordid) {
+  Scope a{metrics_["route"], Metrics::Operation::FIND};
+  auto x = routes_.get<route_by_clord_idx>().find(clordid);
+  if (x == routes_.get<route_by_clord_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid routeid"});
   }
   return {*x};

@@ -1,5 +1,5 @@
 #include "client.h"
-#include "idtype.h"
+#include <types/idtype.h>
 #include <atomic>
 #include <optional>
 #include <stdexcept>
@@ -30,11 +30,11 @@ public:
   tl::expected<void, types::Error> ackRoute(const types::IdType route_id);
 
   tl::expected<types::IdType, types::Error>
-  sendNewFillForRoute(const types::IdType route_id, const std::string &exec_id);
+  createNewManualFillForRoute(const types::IdType route_id);
 
   tl::expected<types::IdType, types::Error>
-  sendNewFillForRoute(const types::FixClOrdIdType &route_clordid,
-                      const types::FixClOrdIdType &exec_id);
+  addFillForRoute(const types::FixClOrdIdType &route_clordid,
+                              const types::FixClOrdIdType &exec_id);
 
   WorkFlow(Client &client) : client_(client) {
     if (!client_.is_ready()) {

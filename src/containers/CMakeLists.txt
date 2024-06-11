@@ -1,14 +1,18 @@
+set(HEADERS 
+        basket.h 
+        fill.h 
+        order.h 
+        route.h
+)
 
-add_library(Containers INTERFACE)
+add_custom_target(Containers ALL
+    COMMENT "Copying Containers headers")
 
-target_sources(Containers PUBLIC 
-    FILE_SET publicheaders 
-    TYPE HEADERS FILES
-    basket.h 
-    fill.h 
-    order.h 
-    route.h 
-) 
+foreach(hdr ${HEADERS})
+    add_custom_command(
+        TARGET Containers
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${hdr} ${CMAKE_BINARY_DIR}/include"
+    )
+endforeach(hdr) 
 
-target_link_libraries(Containers INTERFACE Types)
-install(TARGETS Containers FILE_SET publicheaders)
+add_dependencies(omslib Containers)

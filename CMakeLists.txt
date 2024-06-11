@@ -10,6 +10,9 @@ find_package(Boost 1.85.0 REQUIRED )
 include_directories(${Boost_INCLUDE_DIRS})
 set(COMPILE_DEFINITIONS OMSCOMPARE_USE_BOOST_MODEL=1)
 
+
+add_library(omslib /dev/null)
+target_include_directories(omslib PUBLIC ${CMAKE_BINARY_DIR}/include)
 add_subdirectory(src/containers/types)
 add_subdirectory(src/containers)
 add_subdirectory(src/sqlite)
@@ -17,6 +20,4 @@ add_subdirectory(src/model)
 add_subdirectory(src/app)
 add_executable(omscompare src/app/main.cpp)
 
-target_include_directories(omscompare PUBLIC Model)
-
-target_link_libraries(omscompare PUBLIC omsmodel Boost)
+target_link_libraries(omscompare PUBLIC omslib Boost)

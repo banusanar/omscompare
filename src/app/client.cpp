@@ -1,11 +1,11 @@
-#include <client.h>
+#include "client.h"
 #include <client_state.h>
 
 namespace omscompare {
-namespace model {
+namespace app {
 
 void Client::init() {
-  state_ = std::make_shared<ClientState>();
+  state_ = std::make_shared<model::ClientState>();
   is_ready_ = true;
   return;
 }

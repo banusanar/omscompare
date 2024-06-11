@@ -1,5 +1,5 @@
-#include "idtype.h"
-#include "uuid.h"
+#include <types/idtype.h>
+#include <types/uuid.h>
 #include <map>
 
 namespace omscompare {

@@ -13,6 +13,7 @@ namespace omscompare {
 namespace containers {
 
 struct route_by_idx {};
+struct route_by_clord_idx {};
 struct route_by_order_idx {};
 struct route_by_status_order_idx {};
 
@@ -22,6 +23,14 @@ struct routeIdIdx {
     return boost::hash_value(entry.id);
   }
 };
+
+struct routeClordIdIdx {
+  typedef std::size_t result_type;
+  result_type operator()(const types::Route &entry) const {
+    return boost::hash_value(entry.clord_id);
+  }
+};
+
 
 struct routeOrderIdIdx {
   typedef std::size_t result_type;
@@ -46,6 +55,8 @@ using Route = boost::multi_index_container<
     boost::multi_index::indexed_by<
         boost::multi_index::hashed_unique<boost::multi_index::tag<route_by_idx>,
                                           routeIdIdx>,
+        boost::multi_index::hashed_unique<boost::multi_index::tag<route_by_clord_idx>,
+                                          routeClordIdIdx>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<route_by_order_idx>, routeOrderIdIdx>,
         boost::multi_index::hashed_unique<

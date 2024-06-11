@@ -1,7 +1,7 @@
 #ifndef OMSCOMPARE_OMSTYPES_FILL_H_
 #define OMSCOMPARE_OMSTYPES_FILL_H_
 
-#include "idtype.h"
+#include <types/idtype.h>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
