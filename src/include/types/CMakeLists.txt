@@ -1,9 +1,5 @@
 
-set(HEADERS 
-        basket.h 
-        fill.h 
-        order.h 
-        route.h)
+set(HEADERS basket.h fill.h order.h route.h)
 
 add_custom_command(OUTPUT mkdirtypes
     COMMAND ${CMAKE_COMMAND} -E make_directory  "${CMAKE_BINARY_DIR}/include/types/"
