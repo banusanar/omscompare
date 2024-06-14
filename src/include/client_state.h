@@ -18,6 +18,24 @@ namespace model {
 class ClientState {
 public:
   ClientState();
+  tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const;
+  tl::expected<types::Order, types::Error>
+  findOrderByClordId(types::FixClOrdIdType clordid) const;
+  tl::expected<types::Basket, types::Error> findBasket(types::IdType orderid) const;
+  tl::expected<types::Route, types::Error> findRoute(types::IdType orderid) const;
+  tl::expected<types::Route, types::Error>
+  findRouteByClordId(types::FixClOrdIdType clordid) const;
+  tl::expected<types::Fill, types::Error> findFill(types::IdType orderid) const;
+
+  // empty vector could mean no values or errors??
+  std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id) const;
+  std::vector<types::Route>
+  findRoutesForOrderId(types::IdType order_id, types::RouteStatus status_match) const;
+  std::vector<types::Fill> findFillsForRouteId(types::IdType route_id,
+                                               types::ExecStatus status_match) const;
+  std::vector<types::Fill> findFillsForOrderId(types::IdType basket_id,
+                                               types::ExecStatus status_match) const;
+
   tl::expected<types::Order, types::Error> findOrder(types::IdType orderid);
   tl::expected<types::Order, types::Error>
   findOrderByClordId(types::FixClOrdIdType clordid);
@@ -27,7 +45,6 @@ public:
   findRouteByClordId(types::FixClOrdIdType clordid);
   tl::expected<types::Fill, types::Error> findFill(types::IdType orderid);
 
-  // empty vector could mean no values or errors??
   std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id);
   std::vector<types::Route>
   findRoutesForOrderId(types::IdType order_id, types::RouteStatus status_match);

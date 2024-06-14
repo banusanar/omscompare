@@ -13,6 +13,8 @@ class ClientState;
 
 namespace app {
 
+class WorkFlow;
+
 class Client {
 public:
   explicit Client(types::ClientIdType clientid)
@@ -30,7 +32,6 @@ public:
   void status();
 
   friend class WorkFlow;
-
 private:
   types::ClientIdType client_id_;
   bool is_ready_;

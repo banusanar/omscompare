@@ -32,17 +32,19 @@ void generateRandomObj(std::byte *data, int size) {
 
 const int DATA_SIZE = 1024;
 
-WorkFlow::WorkFlow(std::string &wf_name, Client &client)
+WorkFlow::WorkFlow(std::string wf_name, Client &client)
     : workflow_name(wf_name), client_(client), metric_() {
   if (!client_.is_ready()) {
     throw std::runtime_error(
         "Cannot initiate workflow for this client. Not ready");
   }
   metric_.counter().start_watch();
+  std::cerr << "Starting workflow [" << workflow_name << "]" << std::endl;
 }
 
 WorkFlow::~WorkFlow() {
-  std::cerr << workflow_name << "," << metric_.counter().getCount() << ","
+  std::cerr << "Ending workflow [" << workflow_name << "]" << std::endl;
+  std::cout << workflow_name << "," << metric_.counter().getCount() << ","
             << std::setprecision(6) << std::ios_base::fixed
             << metric_.counter().getTimeTaken() << std::endl;
 }
@@ -54,6 +56,7 @@ WorkFlow::Scope::~Scope() { auto stop = m.counter().stop_watch(); }
 tl::expected<types::IdType, types::Error>
 WorkFlow::createOrder(const std::string &clord_id,
                       std::optional<types::IdType> &basket_id) {
+  Scope s(metric_);
   types::Order order{.id = types::getNewOrderIdForClient(client_.client_id_),
                      .clord_id =
                          types::getNewClordIdForClient(client_.client_id_),
@@ -67,6 +70,7 @@ tl::expected<types::IdType, types::Error>
 WorkFlow::createChildOrder(const std::string &clord_id,
                            const std::string &parent_clord_id,
                            std::optional<types::IdType> &basket_id) {
+  Scope s(metric_);
   return client_.state_->findOrderByClordId(parent_clord_id)
       .and_then([&](types::Order parent_order)
                     -> tl::expected<types::IdType, types::Error> {
@@ -82,6 +86,7 @@ WorkFlow::createChildOrder(const std::string &clord_id,
 
 tl::expected<types::IdType, types::Error>
 WorkFlow::createBasket(const std::string &basket_name) {
+  Scope s(metric_);
   types::Basket basket{.id = types::getNewBasketIdForClient(client_.client_id_),
                        .name = basket_name,
                        .is_active = true};
@@ -90,6 +95,7 @@ WorkFlow::createBasket(const std::string &basket_name) {
 
 tl::expected<types::IdType, types::Error>
 WorkFlow::routeOrder(const types::IdType order_id, const std::string &broker) {
+  Scope s(metric_);
   types::Route route{.id = types::getNewRouteIdForClient(client_.client_id_),
                      .order_id = order_id,
                      .clord_id =
@@ -102,6 +108,7 @@ WorkFlow::routeOrder(const types::IdType order_id, const std::string &broker) {
 
 tl::expected<void, types::Error>
 WorkFlow::ackRoute(const types::IdType route_id) {
+  Scope s(metric_);
   return client_.state_->findRoute(route_id).and_then(
       [&](types::Route route) -> tl::expected<void, types::Error> {
         types::Route updroute{route};
@@ -112,6 +119,7 @@ WorkFlow::ackRoute(const types::IdType route_id) {
 
 tl::expected<types::IdType, types::Error>
 WorkFlow::createNewManualFillForRoute(const types::IdType route_id) {
+  Scope s(metric_);
   return client_.state_->findRoute(route_id).and_then(
       [&](types::Route route) -> tl::expected<types::IdType, types::Error> {
         types::Fill fill{.id = types::getNewFillIdForClient(client_.client_id_),
@@ -128,6 +136,7 @@ WorkFlow::createNewManualFillForRoute(const types::IdType route_id) {
 tl::expected<types::IdType, types::Error>
 WorkFlow::addFillForRoute(const types::FixClOrdIdType &route_clordid,
                           const types::FixClOrdIdType &exec_id) {
+  Scope s(metric_);
   return client_.state_->findRouteByClordId(route_clordid)
       .and_then(
           [&](types::Route route) -> tl::expected<types::IdType, types::Error> {

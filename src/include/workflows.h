@@ -13,7 +13,7 @@ namespace app {
 
 class WorkFlow {
 public:
-  WorkFlow(std::string &wf_name, Client &client);
+  WorkFlow(std::string wf_name, Client &client);
   ~WorkFlow();
 
   tl::expected<types::IdType, types::Error>
@@ -39,6 +39,8 @@ public:
   tl::expected<types::IdType, types::Error>
   addFillForRoute(const types::FixClOrdIdType &route_clordid,
                   const types::FixClOrdIdType &exec_id);
+
+  const model::ClientState& clientRO() const { return *client_.state_; }
 
   struct Scope {
     Scope(model::Metrics &m);

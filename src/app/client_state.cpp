@@ -35,6 +35,11 @@ ClientState::Scope::~Scope() {
 }
 
 tl::expected<types::Order, Error>
+ClientState::findOrder(types::IdType orderid) const {
+  return findOrder(orderid);
+}
+
+tl::expected<types::Order, Error>
 ClientState::findOrder(types::IdType orderid) {
   Scope a{metrics_["order"], Metrics::Operation::FIND};
   auto x = orders_.get<order_by_idx>().find(orderid);
@@ -42,6 +47,11 @@ ClientState::findOrder(types::IdType orderid) {
     return tl::make_unexpected(Error{.what = "Invalid orderid"});
   }
   return {*x};
+}
+
+tl::expected<types::Order, Error>
+ClientState::findOrderByClordId(types::FixClOrdIdType clordid) const {
+  return findOrderByClordId(clordid);
 }
 
 tl::expected<types::Order, Error>
@@ -56,6 +66,11 @@ ClientState::findOrderByClordId(types::FixClOrdIdType clordid) {
 }
 
 tl::expected<types::Basket, Error>
+ClientState::findBasket(types::IdType basketid) const {
+  return findBasket(basketid);
+}
+
+tl::expected<types::Basket, Error>
 ClientState::findBasket(types::IdType basketid) {
   Scope a{metrics_["basket"], Metrics::Operation::FIND};
   BasketByIdxType::iterator x = baskets_.get<basket_by_idx>().find(basketid);
@@ -63,6 +78,11 @@ ClientState::findBasket(types::IdType basketid) {
     return tl::make_unexpected(Error{.what = "Invalid basketid"});
   }
   return {*x};
+}
+
+tl::expected<types::Route, Error>
+ClientState::findRoute(types::IdType routeid) const {
+  return findRoute(routeid);
 }
 
 tl::expected<types::Route, Error>
@@ -76,6 +96,11 @@ ClientState::findRoute(types::IdType routeid) {
 }
 
 tl::expected<types::Route, Error>
+ClientState::findRouteByClordId(types::FixClOrdIdType clordid) const {
+  return findRouteByClordId(clordid);
+}
+
+tl::expected<types::Route, Error>
 ClientState::findRouteByClordId(types::FixClOrdIdType clordid) {
   Scope a{metrics_["route"], Metrics::Operation::FIND};
   RouteByClordIdType::iterator x =
@@ -84,6 +109,11 @@ ClientState::findRouteByClordId(types::FixClOrdIdType clordid) {
     return tl::make_unexpected(Error{.what = "Invalid routeid"});
   }
   return {*x};
+}
+
+tl::expected<types::Fill, Error>
+ClientState::findFill(types::IdType fillid) const {
+  return findFill(fillid);
 }
 
 tl::expected<types::Fill, Error> ClientState::findFill(types::IdType fillid) {
@@ -95,7 +125,10 @@ tl::expected<types::Fill, Error> ClientState::findFill(types::IdType fillid) {
   return {*x};
 }
 
-// empty vector could mean no values or errors??
+std::vector<types::Order>
+ClientState::findOrdersForBasketId(types::IdType basket_id) const {
+  return findOrdersForBasketId(basket_id);
+}
 
 std::vector<types::Order>
 ClientState::findOrdersForBasketId(types::IdType basket_id) {
@@ -113,6 +146,12 @@ ClientState::findOrdersForBasketId(types::IdType basket_id) {
     result.emplace_back(*start);
   }
   return result;
+}
+
+std::vector<types::Route>
+ClientState::findRoutesForOrderId(types::IdType order_id,
+                                  types::RouteStatus status_match) const {
+  return findRoutesForOrderId(order_id, status_match);
 }
 
 std::vector<types::Route>
@@ -140,6 +179,12 @@ ClientState::findRoutesForOrderId(types::IdType order_id,
 
 std::vector<types::Fill>
 ClientState::findFillsForRouteId(types::IdType route_id,
+                                 types::ExecStatus status_match) const {
+  return findFillsForRouteId(route_id, status_match);
+}
+
+std::vector<types::Fill>
+ClientState::findFillsForRouteId(types::IdType route_id,
                                  types::ExecStatus status_match) {
   Scope a{metrics_["fill"], Metrics::Operation::FIND};
   auto [start, end] = fills_.get<fill_by_route_idx>().equal_range(route_id);
@@ -153,6 +198,12 @@ ClientState::findFillsForRouteId(types::IdType route_id,
       result.emplace_back(*start);
   }
   return result;
+}
+
+std::vector<types::Fill>
+ClientState::findFillsForOrderId(types::IdType order_id,
+                                 types::ExecStatus status_match) const {
+  return findFillsForOrderId(order_id, status_match);
 }
 
 std::vector<types::Fill>
