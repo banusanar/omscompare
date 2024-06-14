@@ -22,10 +22,13 @@ struct Unit {
 class Counter {
 public:
   Counter()
-       : count(0), total_time_since_count(0.0), begin_start_of_operation() {}
+      : count(0), total_time_since_count(0.0), begin_start_of_operation() {}
 
   void start_watch();
   std::optional<Unit> stop_watch();
+
+  constexpr uint64_t getCount() const { return count; }
+  constexpr double getTimeTaken() const { return total_time_since_count; }
 
 private:
   uint64_t count{0};

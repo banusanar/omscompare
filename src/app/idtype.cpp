@@ -1,6 +1,6 @@
-#include <types/idtype.h>
 #include "uuid.h"
 #include <map>
+#include <types/idtype.h>
 
 namespace omscompare {
 namespace types {

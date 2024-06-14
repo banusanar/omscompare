@@ -13,8 +13,8 @@ std::optional<Unit> Counter::stop_watch() {
           std::chrono::steady_clock::now() - begin_start_of_operation)
           .count();
   count++;
-  if (count % 100) {
-    auto result = Unit{ .count = count, .timetaken = total_time_since_count};
+  if (count % 100 == 0) {
+    auto result = Unit{.count = count, .timetaken = total_time_since_count};
     total_time_since_count = 0;
     return {result};
   }

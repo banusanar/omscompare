@@ -1,7 +1,7 @@
 #ifndef OMSCOMPARE_OMSTYPES_BASKET_H_
 #define OMSCOMPARE_OMSTYPES_BASKET_H_
-#include <types/idtype.h>
 #include <string>
+#include <types/idtype.h>
 namespace omscompare {
 namespace types {
 

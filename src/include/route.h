@@ -4,9 +4,9 @@
 #include "types/idtype.h"
 #include <boost/container_hash/detail/hash_integral.hpp>
 #include <boost/container_hash/hash.hpp>
+#include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
-#include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index_container_fwd.hpp>
 
@@ -35,7 +35,6 @@ struct route_by_status_order_idx {};
 //   }
 // };
 
-
 // struct routeOrderIdIdx {
 //   typedef std::size_t result_type;
 //   result_type operator()(const types::Route &entry) const {
@@ -59,18 +58,26 @@ struct route_by_status_order_idx {};
 using Route = boost::multi_index_container<
     types::Route,
     boost::multi_index::indexed_by<
-        boost::multi_index::hashed_unique<boost::multi_index::tag<route_by_idx>,
-            boost::multi_index::member<types::Route,types::IdType,&types::Route::id>>,
-        boost::multi_index::hashed_unique<boost::multi_index::tag<route_by_clord_idx>,
-            boost::multi_index::member<types::Route,types::FixClOrdIdType,&types::Route::clord_id>>,
+        boost::multi_index::hashed_unique<
+            boost::multi_index::tag<route_by_idx>,
+            boost::multi_index::member<types::Route, types::IdType,
+                                       &types::Route::id>>,
+        boost::multi_index::hashed_unique<
+            boost::multi_index::tag<route_by_clord_idx>,
+            boost::multi_index::member<types::Route, types::FixClOrdIdType,
+                                       &types::Route::clord_id>>,
         boost::multi_index::hashed_non_unique<
-            boost::multi_index::tag<route_by_order_idx>, 
-            boost::multi_index::member<types::Route,types::IdType,&types::Route::order_id>>,
+            boost::multi_index::tag<route_by_order_idx>,
+            boost::multi_index::member<types::Route, types::IdType,
+                                       &types::Route::order_id>>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<route_by_status_order_idx>,
-            boost::multi_index::composite_key<types::Route, 
-              boost::multi_index::member<types::Route,types::RouteStatus,&types::Route::status>,
-              boost::multi_index::member<types::Route,types::IdType,&types::Route::order_id>>> >>;
+            boost::multi_index::composite_key<
+                types::Route,
+                boost::multi_index::member<types::Route, types::RouteStatus,
+                                           &types::Route::status>,
+                boost::multi_index::member<types::Route, types::IdType,
+                                           &types::Route::order_id>>>>>;
 
 using RouteByIdxType = Route::index<route_by_idx>::type;
 using RouteByOrderIdType = Route::index<route_by_order_idx>::type;

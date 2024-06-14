@@ -4,8 +4,8 @@
 #include "types/idtype.h"
 #include <boost/container_hash/detail/hash_integral.hpp>
 #include <boost/multi_index/hashed_index.hpp>
-#include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
+#include <boost/multi_index_container.hpp>
 #include <boost/multi_index_container_fwd.hpp>
 
 #include <types/order.h>
@@ -31,14 +31,18 @@ struct basketIdOrderIdx {
 using Order = boost::multi_index_container<
     types::Order,
     boost::multi_index::indexed_by<
-        boost::multi_index::hashed_unique<boost::multi_index::tag<order_by_idx>,
-          boost::multi_index::member<types::Order,types::IdType,&types::Order::id>>,
         boost::multi_index::hashed_unique<
-            boost::multi_index::tag<order_by_clord_idx>, 
-            boost::multi_index::member<types::Order,types::FixClOrdIdType,&types::Order::clord_id>>,
+            boost::multi_index::tag<order_by_idx>,
+            boost::multi_index::member<types::Order, types::IdType,
+                                       &types::Order::id>>,
+        boost::multi_index::hashed_unique<
+            boost::multi_index::tag<order_by_clord_idx>,
+            boost::multi_index::member<types::Order, types::FixClOrdIdType,
+                                       &types::Order::clord_id>>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<order_by_parent_idx>,
-            boost::multi_index::member<types::Order,types::IdType,&types::Order::parent_order_id>>,
+            boost::multi_index::member<types::Order, types::IdType,
+                                       &types::Order::parent_order_id>>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<order_by_basket_idx>, basketIdOrderIdx>>>;
 

@@ -13,7 +13,5 @@ target_sources(omslib PRIVATE
 
 #target_include_directories(omslib PUBLIC .)
 
-target_link_libraries(omscompare PUBLIC omslib Boost)
+target_link_libraries(omscompare PUBLIC omslib Boost::boost)
 target_include_directories(omslib PUBLIC ${CMAKE_SOURCE_DIR}/src/include)
-
-target_link_libraries(omscompare PUBLIC omslib Boost)

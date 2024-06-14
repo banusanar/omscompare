@@ -2,9 +2,9 @@
 #define OMSCOMPARE_OMSMODEL_CLIENT_H_
 
 #include <cstdint>
-#include <types/idtype.h>
 #include <memory>
 #include <mutex>
+#include <types/idtype.h>
 
 namespace omscompare {
 namespace model {

@@ -12,5 +12,5 @@ void Client::init() {
 
 void Client::status() { state_->status(); }
 
-} // namespace model
+} // namespace app
 } // namespace omscompare

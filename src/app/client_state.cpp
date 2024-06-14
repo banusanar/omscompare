@@ -1,12 +1,12 @@
 #include <basket.h>
+#include <bits/ranges_base.h>
+#include <client_state.h>
 #include <fill.h>
-#include <types/idtype.h>
 #include <metrics.h>
 #include <order.h>
 #include <route.h>
-#include <bits/ranges_base.h>
-#include <client_state.h>
 #include <tl/expected.hpp>
+#include <types/idtype.h>
 
 namespace omscompare {
 namespace model {
@@ -47,7 +47,8 @@ ClientState::findOrder(types::IdType orderid) {
 tl::expected<types::Order, Error>
 ClientState::findOrderByClordId(types::FixClOrdIdType clordid) {
   Scope a{metrics_["order"], Metrics::Operation::FIND};
-  OrderByClordIdType::iterator x = orders_.get<order_by_clord_idx>().find(clordid);
+  OrderByClordIdType::iterator x =
+      orders_.get<order_by_clord_idx>().find(clordid);
   if (x == orders_.get<order_by_clord_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid orderid"});
   }
@@ -77,7 +78,8 @@ ClientState::findRoute(types::IdType routeid) {
 tl::expected<types::Route, Error>
 ClientState::findRouteByClordId(types::FixClOrdIdType clordid) {
   Scope a{metrics_["route"], Metrics::Operation::FIND};
-  RouteByClordIdType::iterator x = routes_.get<route_by_clord_idx>().find(clordid);
+  RouteByClordIdType::iterator x =
+      routes_.get<route_by_clord_idx>().find(clordid);
   if (x == routes_.get<route_by_clord_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid routeid"});
   }
@@ -98,8 +100,10 @@ tl::expected<types::Fill, Error> ClientState::findFill(types::IdType fillid) {
 std::vector<types::Order>
 ClientState::findOrdersForBasketId(types::IdType basket_id) {
   Scope a{metrics_["order"], Metrics::Operation::FIND};
-  std::pair<OrderByBasketIdType::iterator, OrderByBasketIdType::iterator> x = orders_.get<order_by_basket_idx>().equal_range(basket_id);
-  auto start = std::get<0>(x); auto end = std::get<1>(x);
+  std::pair<OrderByBasketIdType::iterator, OrderByBasketIdType::iterator> x =
+      orders_.get<order_by_basket_idx>().equal_range(basket_id);
+  auto start = std::get<0>(x);
+  auto end = std::get<1>(x);
   if (start == end) {
     return {};
   }
@@ -115,13 +119,14 @@ std::vector<types::Route>
 ClientState::findRoutesForOrderId(types::IdType order_id,
                                   types::RouteStatus status_match) {
   Scope a{metrics_["route"], Metrics::Operation::FIND};
-  using RouteStatusPairType = std::pair<
-    Route::index<route_by_status_order_idx>::type::iterator,
-    Route::index<route_by_status_order_idx>::type::iterator>;
+  using RouteStatusPairType =
+      std::pair<Route::index<route_by_status_order_idx>::type::iterator,
+                Route::index<route_by_status_order_idx>::type::iterator>;
 
   RouteStatusPairType x = routes_.get<route_by_status_order_idx>().equal_range(
       std::make_tuple(status_match, order_id));
-  auto start = std::get<0>(x); auto end = std::get<1>(x);
+  auto start = std::get<0>(x);
+  auto end = std::get<1>(x);
   if (start == end) {
     return {};
   }

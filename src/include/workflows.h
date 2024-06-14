@@ -1,17 +1,21 @@
 #include "client.h"
-#include <types/idtype.h>
+#include "metrics.h"
 #include <atomic>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <tl/expected.hpp>
 #include <types/error.h>
+#include <types/idtype.h>
 
 namespace omscompare {
 namespace app {
 
 class WorkFlow {
 public:
+  WorkFlow(std::string &wf_name, Client &client);
+  ~WorkFlow();
+
   tl::expected<types::IdType, types::Error>
   createOrder(const std::string &clord_id,
               std::optional<types::IdType> &basket_id);
@@ -34,17 +38,19 @@ public:
 
   tl::expected<types::IdType, types::Error>
   addFillForRoute(const types::FixClOrdIdType &route_clordid,
-                              const types::FixClOrdIdType &exec_id);
+                  const types::FixClOrdIdType &exec_id);
 
-  WorkFlow(Client &client) : client_(client) {
-    if (!client_.is_ready()) {
-      throw std::runtime_error(
-          "Cannot initiate workflow for this client. Not ready");
-    }
-  }
+  struct Scope {
+    Scope(model::Metrics &m);
+    ~Scope();
+
+    model::Metrics &m;
+  };
 
 private:
+  std::string workflow_name;
   Client &client_;
+  model::Metrics metric_;
   std::atomic_bool is_success{false};
   //
   void sendToDownstreamSubscribers(){};

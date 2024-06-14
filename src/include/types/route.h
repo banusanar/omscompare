@@ -1,11 +1,11 @@
 #ifndef OMSCOMPARE_OMSTYPES_ROUTE_H_
 #define OMSCOMPARE_OMSTYPES_ROUTE_H_
 
-#include <types/idtype.h>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <types/idtype.h>
 
 namespace omscompare {
 namespace types {

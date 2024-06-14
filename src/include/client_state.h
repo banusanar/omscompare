@@ -3,14 +3,14 @@
 
 #include <basket.h>
 #include <fill.h>
-#include <types/idtype.h>
+#include <map>
 #include <metrics.h>
 #include <order.h>
 #include <route.h>
-#include <types/error.h>
-#include <map>
 #include <string>
 #include <tl/expected.hpp>
+#include <types/error.h>
+#include <types/idtype.h>
 
 namespace omscompare {
 namespace model {
