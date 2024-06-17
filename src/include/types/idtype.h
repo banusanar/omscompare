@@ -11,6 +11,8 @@ using IdType = uint64_t;
 using FixClOrdIdType = std::string;
 using FixExecIdType = std::string;
 
+const int DATA_SIZE = 256;
+
 IdType getNewBasketIdForClient(ClientIdType);
 IdType getNewOrderIdForClient(ClientIdType);
 FixClOrdIdType getNewClordIdForClient(ClientIdType);

@@ -17,7 +17,7 @@ struct Order {
   FixClOrdIdType clord_id; // incoming
   IdType parent_order_id;
   std::optional<IdType> basket_id;
-  std::byte data[1024];
+  std::byte data[DATA_SIZE];
 };
 
 } // namespace types

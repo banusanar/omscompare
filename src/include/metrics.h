@@ -25,7 +25,7 @@ public:
       : count(0), total_time_since_count(0.0), begin_start_of_operation() {}
 
   void start_watch();
-  std::optional<Unit> stop_watch();
+  void stop_watch();
 
   constexpr uint64_t getCount() const { return count; }
   constexpr double getTimeTaken() const { return total_time_since_count; }
@@ -38,20 +38,15 @@ private:
 
 class Metrics {
 public:
-  enum class Operation : int { UNKNOWN, FIND, ADD, UPDATE, DELETE };
-  const std::vector<std::string> OpStr{"UNKNOWN", "FIND", "ADD", "UPDATE",
-                                       "DELETE"};
 
-  Metrics();
+  Metrics(){}
 
-  void add(Operation &oper, uint64_t count, double timetaken);
-  void status();
-
-  Counter &counter() { return counter_; }
+  Counter &readCounter() { return ro_counter_; }
+  Counter &writeCounter() { return wo_counter_; }
 
 private:
-  std::map<Operation, std::list<Unit>> units_;
-  Counter counter_;
+  Counter ro_counter_;
+  Counter wo_counter_;
 };
 
 } // namespace model

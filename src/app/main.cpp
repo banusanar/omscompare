@@ -1,5 +1,6 @@
 #include "types/error.h"
 #include "types/route.h"
+#include <argparse/argparse.hpp>
 #include <client.h>
 #include <client_state.h>
 #include <iostream>
@@ -11,14 +12,39 @@
 
 int main(int argc, char **argv) {
   using namespace omscompare;
-  int64_t num_runs = 10;
+  int num_runs = 10;
   try {
-    if (argc == 2) {
-    }
+    argparse::ArgumentParser program("omscompare");
+    program.add_argument("--count")
+            .required()
+            .help("Number of runs per workflow")
+            .scan<'i', int>();
 
+    program.add_argument("-o", "--order_route")
+            .help("Creates 1 order and 1 route per workflow")
+            .flag();
+
+    program.add_argument("-f", "--order_route_fill")
+            .help("Creates 1 order, 1 route, 1 fill per workflow")
+            .flag();
+
+    program.add_argument("-rm", "--order_multi_route_fill")
+            .help("Creates 1 order, upto [count] routes, 1 fill per route per workflow")
+            .flag();
+
+    program.add_argument("-mf", "--order_multi_route_multi_fill")
+            .help("Creates 1 order, upto [count] routes, upto [count] fills per route per workflow")
+            .flag();
+
+    program.parse_args(argc, argv); 
+    num_runs = program.get<int>("count");
+
+    if(program["order_route"] == true)
     {
+      std::cout << "Running workflow \'order_route\' for " << num_runs << " times" << std::endl; 
       types::ClientIdType clientid = 1001;
       app::Client client(clientid);
+      client.init();
       app::WorkFlow n1("order_route", client);
       for (int idx = 0; idx < num_runs; idx++) {
         std::string broker = "broker_" + std::to_string(idx);
@@ -49,10 +75,13 @@ int main(int argc, char **argv) {
       }
     }
 
+    if(program["order_route_fill"] == true)
     {
+      std::cout << "Running workflow \'order_route_fill\' for " << num_runs << " times" << std::endl; 
       types::ClientIdType clientid = 1024;
       app::Client client(clientid);
-      app::WorkFlow n1("order_route_one_fill", client);
+      client.init();
+      app::WorkFlow n1("order_route_fill", client);
       for (int idx = 0; idx < num_runs; idx++) {
         std::string broker = "broker_" + std::to_string(idx);
         std::string order_clord_id = "order_" + std::to_string(idx);
@@ -89,16 +118,19 @@ int main(int argc, char **argv) {
       }
     }
 
+    if(program["order_multi_route_fill"] == true)
     {
+      std::cout << "Running workflow \'order_multi_route_one_fill\' for " << num_runs << " times" << std::endl; 
       types::ClientIdType clientid = 1024;
       app::Client client(clientid);
+      client.init();
       app::WorkFlow n1("order_mult_route_one_fill", client);
       for (int idx = 0; idx < num_runs; idx++) {
         std::string order_clord_id = "order_" + std::to_string(idx);
 
         auto create_routes_and_fill =
             [&](types::IdType o) -> tl::expected<void, types::Error> {
-          for (int jdx = 0; jdx < idx; jdx++) {
+          for (int jdx = 0; jdx < std::min(idx,types::DATA_SIZE); jdx++) {
             std::string broker =
                 "broker_" + std::to_string(idx) + "_" + std::to_string(jdx);
             auto result = n1.routeOrder(o, broker).and_then(
@@ -136,16 +168,19 @@ int main(int argc, char **argv) {
       }
     }
 
+    if(program["order_multi_route_multi_fill"] == true)
     {
+      std::cout << "Running workflow \'order_multi_route_multi_fill\' for " << num_runs << " times" << std::endl; 
       types::ClientIdType clientid = 1042;
       app::Client client(clientid);
+      client.init();
       app::WorkFlow n1("order_mult_route_multi_fill", client);
       for (int idx = 0; idx < num_runs; idx++) {
         std::string order_clord_id = "order_" + std::to_string(idx);
 
         auto create_routes_and_fills =
             [&](types::IdType o) -> tl::expected<void, types::Error> {
-          for (int jdx = 0; jdx < idx; jdx++) {
+          for (int jdx = 0; jdx < std::min(idx,types::DATA_SIZE); jdx++) {
             std::string broker =
                 "broker_" + std::to_string(idx) + "_" + std::to_string(jdx);
 

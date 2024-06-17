@@ -10,7 +10,8 @@ void Client::init() {
   return;
 }
 
-void Client::status() { state_->status(); }
+//TODO
+void Client::status() { }
 
 } // namespace app
 } // namespace omscompare

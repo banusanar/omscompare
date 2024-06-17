@@ -36,7 +36,7 @@ struct Route {
   FixClOrdIdType clord_id; // outgoing
   RouteStatus status;
   std::string broker;
-  std::byte data[1024];
+  std::byte data[DATA_SIZE];
 };
 
 } // namespace types

@@ -74,19 +74,19 @@ public:
   tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id);
   tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id);
 
-  void status() {
-    for (auto &[s, m] : metrics_) {
-      m.status();
-    }
-  }
+  // void status() {
+  //   for (auto &[s, m] : metrics_) {
+  //     m.status();
+  //   }
+  // }
 
-  struct Scope {
-    Scope(Metrics &m, Metrics::Operation oper);
-    ~Scope();
+  // struct Scope {
+  //   Scope(Metrics &m, Metrics::Operation oper);
+  //   ~Scope();
 
-    Metrics &m;
-    Metrics::Operation oper;
-  };
+  //   Metrics &m;
+  //   Metrics::Operation oper;
+  // };
 
 private:
   containers::Basket baskets_;
@@ -94,7 +94,7 @@ private:
   containers::Route routes_;
   containers::Fill fills_;
 
-  std::map<std::string, Metrics> metrics_;
+  //std::map<std::string, Metrics> metrics_;
 };
 
 } // namespace model

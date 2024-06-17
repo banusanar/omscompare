@@ -35,7 +35,7 @@ struct Fill {
   ExecStatus status;
   std::optional<IdType>
       original_id; // If this is a corrected fill, what was the original id
-  std::byte data[1024];
+  std::byte data[DATA_SIZE];
 };
 
 } // namespace types

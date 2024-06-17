@@ -1,4 +1,5 @@
 #include "workflows.h"
+#include "metrics.h"
 #include <algorithm>
 #include <basket.h>
 #include <client_state.h>
@@ -28,9 +29,14 @@ void generateRandomObj(std::byte *data, int size) {
   std::generate_n(data, size, [rbe]() mutable { return std::byte(rbe()); });
 }
 
-} // namespace
+auto print_stats = [](const model::Counter& lhs, std::string oper) {
+  if(lhs.getCount() > 0) {
+    auto avg = lhs.getTimeTaken()/lhs.getCount();
+    std::cout << "Each " << oper << " took an avg of " << std::setprecision(6) << std::ios_base::fixed << avg << " msecs." << std::endl;
+  }
+};
 
-const int DATA_SIZE = 1024;
+} // namespace
 
 WorkFlow::WorkFlow(std::string wf_name, Client &client)
     : workflow_name(wf_name), client_(client), metric_() {
@@ -38,20 +44,31 @@ WorkFlow::WorkFlow(std::string wf_name, Client &client)
     throw std::runtime_error(
         "Cannot initiate workflow for this client. Not ready");
   }
-  metric_.counter().start_watch();
-  std::cerr << "Starting workflow [" << workflow_name << "]" << std::endl;
 }
 
 WorkFlow::~WorkFlow() {
-  std::cerr << "Ending workflow [" << workflow_name << "]" << std::endl;
-  std::cout << workflow_name << "," << metric_.counter().getCount() << ","
-            << std::setprecision(6) << std::ios_base::fixed
-            << metric_.counter().getTimeTaken() << std::endl;
+  const auto totaltime = metric_.readCounter().getTimeTaken() + metric_.writeCounter().getTimeTaken();
+  const auto totalcount = metric_.readCounter().getCount() + metric_.writeCounter().getCount();
+  if(totaltime < 100000) {
+    std::cout << totalcount << " operations took "
+              << std::setprecision(6) << std::ios_base::fixed
+              << totaltime  << " msecs." << std::endl;
+  }
+  else {
+    std::cout << totalcount << " operations took "
+              << std::setprecision(6) << std::ios_base::fixed
+              << totaltime / 100000 << " secs." << std::endl;
+  }
+  
+  print_stats(metric_.readCounter(), "read");
+  print_stats(metric_.writeCounter(), "write");
+
+
 }
 
-WorkFlow::Scope::Scope(model::Metrics &m) : m(m) { m.counter().start_watch(); }
+WorkFlow::Scope::Scope(model::Metrics &m) : m(m) { m.readCounter().start_watch(); }
 
-WorkFlow::Scope::~Scope() { auto stop = m.counter().stop_watch(); }
+WorkFlow::Scope::~Scope() { m.readCounter().stop_watch(); }
 
 tl::expected<types::IdType, types::Error>
 WorkFlow::createOrder(const std::string &clord_id,
@@ -62,7 +79,7 @@ WorkFlow::createOrder(const std::string &clord_id,
                          types::getNewClordIdForClient(client_.client_id_),
                      .parent_order_id = 0,
                      .basket_id = basket_id};
-  generateRandomObj(order.data, DATA_SIZE);
+  generateRandomObj(order.data, types::DATA_SIZE);
   return client_.state_->addOrder(std::move(order));
 }
 
@@ -79,7 +96,7 @@ WorkFlow::createChildOrder(const std::string &clord_id,
             .clord_id = types::getNewClordIdForClient(client_.client_id_),
             .parent_order_id = parent_order.id,
             .basket_id = basket_id};
-        generateRandomObj(order.data, DATA_SIZE);
+        generateRandomObj(order.data, types::DATA_SIZE);
         return client_.state_->addOrder(std::move(order));
       });
 }
@@ -102,7 +119,7 @@ WorkFlow::routeOrder(const types::IdType order_id, const std::string &broker) {
                          types::getNewRouteClordIdForClient(client_.client_id_),
                      .status = types::RouteStatus::SENT_TO_BROKER,
                      .broker = broker};
-  generateRandomObj(route.data, DATA_SIZE);
+  generateRandomObj(route.data, types::DATA_SIZE);
   return client_.state_->addRouteForOrder(std::move(route), order_id);
 }
 
@@ -128,7 +145,7 @@ WorkFlow::createNewManualFillForRoute(const types::IdType route_id) {
                          .exec_id = types::getNewExecIdForClient(
                              client_.client_id_, route.id),
                          .status = types::ExecStatus::NEW};
-        generateRandomObj(fill.data, DATA_SIZE);
+        generateRandomObj(fill.data, types::DATA_SIZE);
         return client_.state_->addFillForRoute(std::move(fill), route_id);
       });
 }
@@ -146,7 +163,7 @@ WorkFlow::addFillForRoute(const types::FixClOrdIdType &route_clordid,
                 .order_id = route.order_id,
                 .exec_id = exec_id,
                 .status = types::ExecStatus::NEW};
-            generateRandomObj(fill.data, DATA_SIZE);
+            generateRandomObj(fill.data, types::DATA_SIZE);
             return client_.state_->addFillForRoute(std::move(fill), route.id);
           });
 }
