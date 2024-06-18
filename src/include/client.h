@@ -8,7 +8,7 @@
 
 namespace omscompare {
 namespace model {
-class ClientState;
+class ClientStateBase;
 }
 
 namespace app {
@@ -17,6 +17,8 @@ class WorkFlow;
 
 class Client {
 public:
+  enum ContainerType { BOOST = 0, SQLite = 1};
+
   explicit Client(types::ClientIdType clientid)
       : client_id_(clientid), is_ready_(false), state_lock_(), state_() {}
 
@@ -26,7 +28,7 @@ public:
   // Client(Client&&) = delete;
   // Client& operator=(Client&&) = delete;
 
-  void init(); // can throw
+  void init(ContainerType type); // can throw
 
   bool is_ready() { return is_ready_; };
   void status();
@@ -36,7 +38,7 @@ private:
   types::ClientIdType client_id_;
   bool is_ready_;
   std::mutex state_lock_;
-  std::shared_ptr<model::ClientState> state_;
+  std::shared_ptr<model::ClientStateBase> state_;
 };
 
 } // namespace app

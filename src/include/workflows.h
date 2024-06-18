@@ -40,7 +40,7 @@ public:
   addFillForRoute(const types::FixClOrdIdType &route_clordid,
                   const types::FixClOrdIdType &exec_id);
 
-  const model::ClientState& clientRO() const { return *client_.state_; }
+  std::shared_ptr<const model::ClientStateBase> clientRO() const { return client_.state_; }
 
   struct Scope {
     Scope(model::Metrics &m);

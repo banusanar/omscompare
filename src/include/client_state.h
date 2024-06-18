@@ -1,6 +1,7 @@
 #ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
 #define OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
 
+#include <client_state_base.h>
 #include <basket.h>
 #include <fill.h>
 #include <map>
@@ -8,6 +9,7 @@
 #include <order.h>
 #include <route.h>
 #include <string>
+
 #include <tl/expected.hpp>
 #include <types/error.h>
 #include <types/idtype.h>
@@ -15,64 +17,47 @@
 namespace omscompare {
 namespace model {
 
-class ClientState {
+class ClientState : public ClientStateBase {
 public:
   ClientState();
-  tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const;
-  tl::expected<types::Order, types::Error>
-  findOrderByClordId(types::FixClOrdIdType clordid) const;
-  tl::expected<types::Basket, types::Error> findBasket(types::IdType orderid) const;
-  tl::expected<types::Route, types::Error> findRoute(types::IdType orderid) const;
-  tl::expected<types::Route, types::Error>
-  findRouteByClordId(types::FixClOrdIdType clordid) const;
-  tl::expected<types::Fill, types::Error> findFill(types::IdType orderid) const;
 
-  // empty vector could mean no values or errors??
-  std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id) const;
-  std::vector<types::Route>
-  findRoutesForOrderId(types::IdType order_id, types::RouteStatus status_match) const;
-  std::vector<types::Fill> findFillsForRouteId(types::IdType route_id,
-                                               types::ExecStatus status_match) const;
-  std::vector<types::Fill> findFillsForOrderId(types::IdType basket_id,
-                                               types::ExecStatus status_match) const;
+  virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) override;
+  virtual tl::expected<types::Order, types::Error>
+  findOrderByClordId(types::FixClOrdIdType clordid) override;
+  virtual tl::expected<types::Basket, types::Error> findBasket(types::IdType orderid) override;
+  virtual tl::expected<types::Route, types::Error> findRoute(types::IdType orderid) override;
+  virtual tl::expected<types::Route, types::Error>
+  findRouteByClordId(types::FixClOrdIdType clordid) override;
+  virtual tl::expected<types::Fill, types::Error> findFill(types::IdType orderid) override;
 
-  tl::expected<types::Order, types::Error> findOrder(types::IdType orderid);
-  tl::expected<types::Order, types::Error>
-  findOrderByClordId(types::FixClOrdIdType clordid);
-  tl::expected<types::Basket, types::Error> findBasket(types::IdType orderid);
-  tl::expected<types::Route, types::Error> findRoute(types::IdType orderid);
-  tl::expected<types::Route, types::Error>
-  findRouteByClordId(types::FixClOrdIdType clordid);
-  tl::expected<types::Fill, types::Error> findFill(types::IdType orderid);
+  virtual std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id) override;
+  virtual std::vector<types::Route>
+  findRoutesForOrderId(types::IdType order_id, types::RouteStatus status_match) override;
+  virtual std::vector<types::Fill> findFillsForRouteId(types::IdType route_id,
+                                               types::ExecStatus status_match) override;
+  virtual std::vector<types::Fill> findFillsForOrderId(types::IdType basket_id,
+                                               types::ExecStatus status_match) override;
 
-  std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id);
-  std::vector<types::Route>
-  findRoutesForOrderId(types::IdType order_id, types::RouteStatus status_match);
-  std::vector<types::Fill> findFillsForRouteId(types::IdType route_id,
-                                               types::ExecStatus status_match);
-  std::vector<types::Fill> findFillsForOrderId(types::IdType basket_id,
-                                               types::ExecStatus status_match);
-
-  tl::expected<types::IdType, types::Error> addBasket(types::Basket &&);
-  tl::expected<types::IdType, types::Error> addOrder(types::Order &&);
-  tl::expected<types::IdType, types::Error>
-  addRouteForOrder(types::Route &&, types::IdType order_id);
-  tl::expected<types::IdType, types::Error>
-  addOrderForBasket(types::Order &&, types::IdType basket_id);
-  tl::expected<types::IdType, types::Error>
-  addFillForRoute(types::Fill &&, types::IdType route_id);
-  tl::expected<types::IdType, types::Error>
+  virtual tl::expected<types::IdType, types::Error> addBasket(types::Basket &&) override;
+  virtual tl::expected<types::IdType, types::Error> addOrder(types::Order &&) override;
+  virtual tl::expected<types::IdType, types::Error>
+  addRouteForOrder(types::Route &&, types::IdType order_id) override;
+  virtual tl::expected<types::IdType, types::Error>
+  addOrderForBasket(types::Order &&, types::IdType basket_id) override;
+  virtual tl::expected<types::IdType, types::Error>
+  addFillForRoute(types::Fill &&, types::IdType route_id) override;
+  virtual tl::expected<types::IdType, types::Error>
   addFillForOrderRoute(types::Fill &&, types::IdType route_id,
-                       types::IdType order_id);
+                       types::IdType order_id) override;
 
-  tl::expected<void, types::Error> updateOrder(types::Order &&);
-  tl::expected<void, types::Error> updateRouteForOrder(types::Route &&);
-  tl::expected<void, types::Error> updateFillForRoute(types::Fill &&);
+  virtual tl::expected<void, types::Error> updateOrder(types::Order &&) override;
+  virtual tl::expected<void, types::Error> updateRouteForOrder(types::Route &&) override;
+  virtual tl::expected<void, types::Error> updateFillForRoute(types::Fill &&) override;
 
-  tl::expected<void, types::Error> deleteBasket(types::IdType basket_id);
-  tl::expected<void, types::Error> deleteOrder(types::IdType order_id);
-  tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id);
-  tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id);
+  virtual tl::expected<void, types::Error> deleteBasket(types::IdType basket_id) override;
+  virtual tl::expected<void, types::Error> deleteOrder(types::IdType order_id) override;
+  virtual tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id) override;
+  virtual tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id) override;
 
   // void status() {
   //   for (auto &[s, m] : metrics_) {

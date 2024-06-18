@@ -11,6 +11,7 @@
 namespace omscompare {
 namespace model {
 
+const int BENCHMARK_SIZE = 100000;
 using Error = types::Error;
 using namespace containers;
 
@@ -36,22 +37,12 @@ ClientState::ClientState()
 // }
 
 tl::expected<types::Order, Error>
-ClientState::findOrder(types::IdType orderid) const {
-  return findOrder(orderid);
-}
-
-tl::expected<types::Order, Error>
 ClientState::findOrder(types::IdType orderid) {
   auto x = orders_.get<order_by_idx>().find(orderid);
   if (x == orders_.get<order_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid orderid"});
   }
   return {*x};
-}
-
-tl::expected<types::Order, Error>
-ClientState::findOrderByClordId(types::FixClOrdIdType clordid) const {
-  return findOrderByClordId(clordid);
 }
 
 tl::expected<types::Order, Error>
@@ -65,22 +56,12 @@ ClientState::findOrderByClordId(types::FixClOrdIdType clordid) {
 }
 
 tl::expected<types::Basket, Error>
-ClientState::findBasket(types::IdType basketid) const {
-  return findBasket(basketid);
-}
-
-tl::expected<types::Basket, Error>
 ClientState::findBasket(types::IdType basketid) {
   BasketByIdxType::iterator x = baskets_.get<basket_by_idx>().find(basketid);
   if (x == baskets_.get<basket_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid basketid"});
   }
   return {*x};
-}
-
-tl::expected<types::Route, Error>
-ClientState::findRoute(types::IdType routeid) const {
-  return findRoute(routeid);
 }
 
 tl::expected<types::Route, Error>
@@ -93,11 +74,6 @@ ClientState::findRoute(types::IdType routeid) {
 }
 
 tl::expected<types::Route, Error>
-ClientState::findRouteByClordId(types::FixClOrdIdType clordid) const {
-  return findRouteByClordId(clordid);
-}
-
-tl::expected<types::Route, Error>
 ClientState::findRouteByClordId(types::FixClOrdIdType clordid) {
   RouteByClordIdType::iterator x =
       routes_.get<route_by_clord_idx>().find(clordid);
@@ -107,22 +83,12 @@ ClientState::findRouteByClordId(types::FixClOrdIdType clordid) {
   return {*x};
 }
 
-tl::expected<types::Fill, Error>
-ClientState::findFill(types::IdType fillid) const {
-  return findFill(fillid);
-}
-
 tl::expected<types::Fill, Error> ClientState::findFill(types::IdType fillid) {
   FillByIdxType::iterator x = fills_.get<fill_by_idx>().find(fillid);
   if (x == fills_.get<fill_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid fillid"});
   }
   return {*x};
-}
-
-std::vector<types::Order>
-ClientState::findOrdersForBasketId(types::IdType basket_id) const {
-  return findOrdersForBasketId(basket_id);
 }
 
 std::vector<types::Order>
@@ -140,12 +106,6 @@ ClientState::findOrdersForBasketId(types::IdType basket_id) {
     result.emplace_back(*start);
   }
   return result;
-}
-
-std::vector<types::Route>
-ClientState::findRoutesForOrderId(types::IdType order_id,
-                                  types::RouteStatus status_match) const {
-  return findRoutesForOrderId(order_id, status_match);
 }
 
 std::vector<types::Route>
@@ -172,12 +132,6 @@ ClientState::findRoutesForOrderId(types::IdType order_id,
 
 std::vector<types::Fill>
 ClientState::findFillsForRouteId(types::IdType route_id,
-                                 types::ExecStatus status_match) const {
-  return findFillsForRouteId(route_id, status_match);
-}
-
-std::vector<types::Fill>
-ClientState::findFillsForRouteId(types::IdType route_id,
                                  types::ExecStatus status_match) {
   auto [start, end] = fills_.get<fill_by_route_idx>().equal_range(route_id);
   if (start == end) {
@@ -190,12 +144,6 @@ ClientState::findFillsForRouteId(types::IdType route_id,
       result.emplace_back(*start);
   }
   return result;
-}
-
-std::vector<types::Fill>
-ClientState::findFillsForOrderId(types::IdType order_id,
-                                 types::ExecStatus status_match) const {
-  return findFillsForOrderId(order_id, status_match);
 }
 
 std::vector<types::Fill>
@@ -222,7 +170,7 @@ ClientState::addBasket(types::Basket &&basket) {
   auto [iter, result] = baskets_.insert(basket);
   if (!result)
     return tl::make_unexpected(Error{.what = "Basket insert failed"});
-
+  if((baskets_.size() % BENCHMARK_SIZE) == 0) { std::cerr << "Baskets at " << baskets_.size() << std::endl; }
   return {iter->id};
 }
 
@@ -231,6 +179,7 @@ tl::expected<types::IdType, Error> ClientState::addOrder(types::Order &&order) {
   if (!result)
     return tl::make_unexpected(Error{.what = "Order insert failed"});
 
+  if((orders_.size() % BENCHMARK_SIZE) == 0) { std::cerr << "orders_ at " << orders_.size() << std::endl; }
   return {iter->id};
 }
 
@@ -242,6 +191,7 @@ ClientState::addRouteForOrder(types::Route &&route, types::IdType order_id) {
         if (!result)
           return tl::make_unexpected(
               Error{.what = "Found Order. Route insert failed"});
+        if((routes_.size() % BENCHMARK_SIZE) == 0) { std::cerr << "routes_ at " << routes_.size() << std::endl; }
         return {iter->id};
       });
 }
@@ -254,6 +204,7 @@ ClientState::addOrderForBasket(types::Order &&order, types::IdType basket_id) {
         if (!result)
           return tl::make_unexpected(
               Error{.what = "Found Basket. Order insert failed"});
+        if((orders_.size() % BENCHMARK_SIZE) == 0) { std::cerr << "orders_ at " << orders_.size() << std::endl; }
         return {iter->id};
       });
 }
@@ -266,6 +217,7 @@ ClientState::addFillForRoute(types::Fill &&fill, types::IdType route_id) {
         if (!result)
           return tl::make_unexpected(
               Error{.what = "Found Route. Fill insert failed"});
+        if((fills_.size() % BENCHMARK_SIZE) == 0) { std::cerr << "fills_ at " << fills_.size() << std::endl; }
         return {iter->id};
       });
 }
@@ -281,6 +233,7 @@ ClientState::addFillForOrderRoute(types::Fill &&fill, types::IdType route_id,
               if (!result)
                 return tl::make_unexpected(
                     Error{.what = "Found Route. Fill insert failed"});
+              if((fills_.size() % BENCHMARK_SIZE) == 0) { std::cerr << "fills_ at " << fills_.size() << std::endl; }
               return {iter->id};
             });
       });

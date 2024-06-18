@@ -39,12 +39,13 @@ int main(int argc, char **argv) {
     program.parse_args(argc, argv); 
     num_runs = program.get<int>("count");
 
+    const auto BOOST = app::Client::ContainerType::BOOST; 
     if(program["order_route"] == true)
     {
       std::cout << "Running workflow \'order_route\' for " << num_runs << " times" << std::endl; 
       types::ClientIdType clientid = 1001;
       app::Client client(clientid);
-      client.init();
+      client.init(BOOST);
       app::WorkFlow n1("order_route", client);
       for (int idx = 0; idx < num_runs; idx++) {
         std::string broker = "broker_" + std::to_string(idx);
@@ -80,7 +81,7 @@ int main(int argc, char **argv) {
       std::cout << "Running workflow \'order_route_fill\' for " << num_runs << " times" << std::endl; 
       types::ClientIdType clientid = 1024;
       app::Client client(clientid);
-      client.init();
+      client.init(BOOST);
       app::WorkFlow n1("order_route_fill", client);
       for (int idx = 0; idx < num_runs; idx++) {
         std::string broker = "broker_" + std::to_string(idx);
@@ -123,7 +124,7 @@ int main(int argc, char **argv) {
       std::cout << "Running workflow \'order_multi_route_one_fill\' for " << num_runs << " times" << std::endl; 
       types::ClientIdType clientid = 1024;
       app::Client client(clientid);
-      client.init();
+      client.init(BOOST);
       app::WorkFlow n1("order_mult_route_one_fill", client);
       for (int idx = 0; idx < num_runs; idx++) {
         std::string order_clord_id = "order_" + std::to_string(idx);
@@ -173,7 +174,7 @@ int main(int argc, char **argv) {
       std::cout << "Running workflow \'order_multi_route_multi_fill\' for " << num_runs << " times" << std::endl; 
       types::ClientIdType clientid = 1042;
       app::Client client(clientid);
-      client.init();
+      client.init(BOOST);
       app::WorkFlow n1("order_mult_route_multi_fill", client);
       for (int idx = 0; idx < num_runs; idx++) {
         std::string order_clord_id = "order_" + std::to_string(idx);
@@ -188,7 +189,7 @@ int main(int argc, char **argv) {
                 [&](types::IdType r) -> tl::expected<void, types::Error> {
                   auto create_fill =
                       [&](void) -> tl::expected<void, types::Error> {
-                    return n1.clientRO().findRoute(r).and_then(
+                    return n1.clientRO()->findRoute(r).and_then(
                         [&](types::Route route)
                             -> tl::expected<void, types::Error> {
                           for (int zdx = 0; zdx < (10 * jdx); zdx++) {

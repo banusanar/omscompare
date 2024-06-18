@@ -2,6 +2,7 @@
 add_executable(omscompare main.cpp)
 add_library(omslib /dev/null)
 target_sources(omslib PRIVATE
+    client_state_base.cpp 
     client_state.cpp 
     client.cpp
     db.cpp 
