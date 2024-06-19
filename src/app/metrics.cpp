@@ -15,6 +15,5 @@ void Counter::stop_watch() {
   count++;
 }
 
-
 } // namespace model
 } // namespace omscompare

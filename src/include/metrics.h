@@ -38,8 +38,7 @@ private:
 
 class Metrics {
 public:
-
-  Metrics(){}
+  Metrics() {}
 
   Counter &readCounter() { return ro_counter_; }
   Counter &writeCounter() { return wo_counter_; }

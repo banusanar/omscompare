@@ -6,18 +6,17 @@ namespace omscompare {
 namespace app {
 
 void Client::init(Client::ContainerType type) {
-  if(type == ContainerType::BOOST) {
+  if (type == ContainerType::BOOST) {
     state_ = std::make_shared<model::ClientState>();
-  }
-  else {
-    //TODO
+  } else {
+    // TODO
   }
   is_ready_ = true;
   return;
 }
 
-//TODO
-void Client::status() { }
+// TODO
+void Client::status() {}
 
 } // namespace app
 } // namespace omscompare

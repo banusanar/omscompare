@@ -16,33 +16,35 @@ int main(int argc, char **argv) {
   try {
     argparse::ArgumentParser program("omscompare");
     program.add_argument("--count")
-            .required()
-            .help("Number of runs per workflow")
-            .scan<'i', int>();
+        .required()
+        .help("Number of runs per workflow")
+        .scan<'i', int>();
 
     program.add_argument("-o", "--order_route")
-            .help("Creates 1 order and 1 route per workflow")
-            .flag();
+        .help("Creates 1 order and 1 route per workflow")
+        .flag();
 
     program.add_argument("-f", "--order_route_fill")
-            .help("Creates 1 order, 1 route, 1 fill per workflow")
-            .flag();
+        .help("Creates 1 order, 1 route, 1 fill per workflow")
+        .flag();
 
     program.add_argument("-rm", "--order_multi_route_fill")
-            .help("Creates 1 order, upto [count] routes, 1 fill per route per workflow")
-            .flag();
+        .help("Creates 1 order, upto [count] routes, 1 fill per route per "
+              "workflow")
+        .flag();
 
     program.add_argument("-mf", "--order_multi_route_multi_fill")
-            .help("Creates 1 order, upto [count] routes, upto [count] fills per route per workflow")
-            .flag();
+        .help("Creates 1 order, upto [count] routes, upto [count] fills per "
+              "route per workflow")
+        .flag();
 
-    program.parse_args(argc, argv); 
+    program.parse_args(argc, argv);
     num_runs = program.get<int>("count");
 
-    const auto BOOST = app::Client::ContainerType::BOOST; 
-    if(program["order_route"] == true)
-    {
-      std::cout << "Running workflow \'order_route\' for " << num_runs << " times" << std::endl; 
+    const auto BOOST = app::Client::ContainerType::BOOST;
+    if (program["order_route"] == true) {
+      std::cout << "Running workflow \'order_route\' for " << num_runs
+                << " times" << std::endl;
       types::ClientIdType clientid = 1001;
       app::Client client(clientid);
       client.init(BOOST);
@@ -76,9 +78,9 @@ int main(int argc, char **argv) {
       }
     }
 
-    if(program["order_route_fill"] == true)
-    {
-      std::cout << "Running workflow \'order_route_fill\' for " << num_runs << " times" << std::endl; 
+    if (program["order_route_fill"] == true) {
+      std::cout << "Running workflow \'order_route_fill\' for " << num_runs
+                << " times" << std::endl;
       types::ClientIdType clientid = 1024;
       app::Client client(clientid);
       client.init(BOOST);
@@ -119,9 +121,9 @@ int main(int argc, char **argv) {
       }
     }
 
-    if(program["order_multi_route_fill"] == true)
-    {
-      std::cout << "Running workflow \'order_multi_route_one_fill\' for " << num_runs << " times" << std::endl; 
+    if (program["order_multi_route_fill"] == true) {
+      std::cout << "Running workflow \'order_multi_route_one_fill\' for "
+                << num_runs << " times" << std::endl;
       types::ClientIdType clientid = 1024;
       app::Client client(clientid);
       client.init(BOOST);
@@ -131,7 +133,7 @@ int main(int argc, char **argv) {
 
         auto create_routes_and_fill =
             [&](types::IdType o) -> tl::expected<void, types::Error> {
-          for (int jdx = 0; jdx < std::min(idx,types::DATA_SIZE); jdx++) {
+          for (int jdx = 0; jdx < std::min(idx, types::DATA_SIZE); jdx++) {
             std::string broker =
                 "broker_" + std::to_string(idx) + "_" + std::to_string(jdx);
             auto result = n1.routeOrder(o, broker).and_then(
@@ -169,9 +171,9 @@ int main(int argc, char **argv) {
       }
     }
 
-    if(program["order_multi_route_multi_fill"] == true)
-    {
-      std::cout << "Running workflow \'order_multi_route_multi_fill\' for " << num_runs << " times" << std::endl; 
+    if (program["order_multi_route_multi_fill"] == true) {
+      std::cout << "Running workflow \'order_multi_route_multi_fill\' for "
+                << num_runs << " times" << std::endl;
       types::ClientIdType clientid = 1042;
       app::Client client(clientid);
       client.init(BOOST);
@@ -181,7 +183,7 @@ int main(int argc, char **argv) {
 
         auto create_routes_and_fills =
             [&](types::IdType o) -> tl::expected<void, types::Error> {
-          for (int jdx = 0; jdx < std::min(idx,types::DATA_SIZE); jdx++) {
+          for (int jdx = 0; jdx < std::min(idx, types::DATA_SIZE); jdx++) {
             std::string broker =
                 "broker_" + std::to_string(idx) + "_" + std::to_string(jdx);
 

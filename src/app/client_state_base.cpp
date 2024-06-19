@@ -44,19 +44,19 @@ ClientStateBase::findOrdersForBasketId(types::IdType basket_id) const {
 
 std::vector<types::Route>
 ClientStateBase::findRoutesForOrderId(types::IdType order_id,
-                                  types::RouteStatus status_match) const {
+                                      types::RouteStatus status_match) const {
   return findRoutesForOrderId(order_id, status_match);
 }
 
 std::vector<types::Fill>
 ClientStateBase::findFillsForRouteId(types::IdType route_id,
-                                 types::ExecStatus status_match) const {
+                                     types::ExecStatus status_match) const {
   return findFillsForRouteId(route_id, status_match);
 }
 
 std::vector<types::Fill>
 ClientStateBase::findFillsForOrderId(types::IdType order_id,
-                                 types::ExecStatus status_match) const {
+                                     types::ExecStatus status_match) const {
   return findFillsForOrderId(order_id, status_match);
 }
 
