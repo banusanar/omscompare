@@ -4,8 +4,8 @@ add_library(omslib /dev/null)
 target_sources(omslib PRIVATE
     client_state_base.cpp 
     client_state.cpp 
+    client_state_sqlite.cpp 
     client.cpp
-    db.cpp 
     idtype.cpp 
     metrics.cpp 
     uuid.cpp 
@@ -15,4 +15,5 @@ target_sources(omslib PRIVATE
 #target_include_directories(omslib PUBLIC .)
 
 target_link_libraries(omscompare PUBLIC omslib Boost::boost)
+target_link_libraries(omscompare PUBLIC SQLiteCpp)
 target_include_directories(omslib PUBLIC ${CMAKE_SOURCE_DIR}/src/include)

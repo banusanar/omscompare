@@ -1,20 +1,20 @@
-#ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
-#define OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
+#ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_SQLITE_H_
+#define OMSCOMPARE_OMSMODEL_CLIENT_STATE_SQLITE_H_
 
-#include <basket.h>
 #include <client_state_base.h>
-#include <fill.h>
-#include <map>
-#include <metrics.h>
-#include <order.h>
-#include <route.h>
+#include <memory>
+#include <types/idtype.h>
+
+namespace SQLite {
+class Database;
+}
 
 namespace omscompare {
 namespace model {
 
-class ClientState : public ClientStateBase {
+class ClientStateSqlite : public ClientStateBase {
 public:
-  ClientState();
+  ClientStateSqlite(types::ClientIdType client_id);
 
   virtual tl::expected<types::Order, types::Error>
   findOrder(types::IdType orderid) override;
@@ -71,27 +71,13 @@ public:
   virtual tl::expected<void, types::Error>
   deleteFillForRoute(types::IdType fill_id) override;
 
-  // void status() {
-  //   for (auto &[s, m] : metrics_) {
-  //     m.status();
-  //   }
-  // }
-
-  // struct Scope {
-  //   Scope(Metrics &m, Metrics::Operation oper);
-  //   ~Scope();
-
-  //   Metrics &m;
-  //   Metrics::Operation oper;
-  // };
-
 private:
-  containers::Basket baskets_;
-  containers::Order orders_;
-  containers::Route routes_;
-  containers::Fill fills_;
+  std::shared_ptr<SQLite::Database> dbh;
 
-  // std::map<std::string, Metrics> metrics_;
+  void create_table(const std::string& sql); //throws instead of returning error
+  tl::expected<void, types::Error> select(const std::string& sql);
+  tl::expected<void, types::Error> insert(const std::string& sql);
+  std::string client_schema;
 };
 
 } // namespace model

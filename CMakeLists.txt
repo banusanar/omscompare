@@ -10,4 +10,5 @@ find_package(Boost 1.85.0 REQUIRED )
 include_directories(${Boost_INCLUDE_DIRS})
 set(COMPILE_DEFINITIONS OMSCOMPARE_USE_BOOST_MODEL=1)
 
+find_package(SQLiteCpp REQUIRED)
 add_subdirectory(src/app)
