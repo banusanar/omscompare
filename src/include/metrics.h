@@ -21,8 +21,7 @@ struct Unit {
 
 class Counter {
 public:
-  Counter()
-      : count(0), total_time_since_count(0.0), begin_start_of_operation() {}
+  Counter() : count(0), total_time_since_count(0.0), begin_start_of_operation() {}
 
   void start_watch();
   void stop_watch();

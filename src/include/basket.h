@@ -22,12 +22,10 @@ using Basket = boost::multi_index_container<
     boost::multi_index::indexed_by<
         boost::multi_index::hashed_unique<
             boost::multi_index::tag<basket_by_idx>,
-            boost::multi_index::member<types::Basket, types::IdType,
-                                       &types::Basket::id>>,
+            boost::multi_index::member<types::Basket, types::IdType, &types::Basket::id>>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<basket_by_name_idx>,
-            boost::multi_index::member<types::Basket, std::string,
-                                       &types::Basket::name>>>>;
+            boost::multi_index::member<types::Basket, std::string, &types::Basket::name>>>>;
 
 using BasketByIdxType = Basket::index<basket_by_idx>::type;
 using BasketByNameType = Basket::index<basket_by_name_idx>::type;

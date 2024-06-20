@@ -60,22 +60,19 @@ using Route = boost::multi_index_container<
     boost::multi_index::indexed_by<
         boost::multi_index::hashed_unique<
             boost::multi_index::tag<route_by_idx>,
-            boost::multi_index::member<types::Route, types::IdType,
-                                       &types::Route::id>>,
+            boost::multi_index::member<types::Route, types::IdType, &types::Route::id>>,
         boost::multi_index::hashed_unique<
             boost::multi_index::tag<route_by_clord_idx>,
             boost::multi_index::member<types::Route, types::FixClOrdIdType,
                                        &types::Route::clord_id>>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<route_by_order_idx>,
-            boost::multi_index::member<types::Route, types::IdType,
-                                       &types::Route::order_id>>,
+            boost::multi_index::member<types::Route, types::IdType, &types::Route::order_id>>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<route_by_status_order_idx>,
             boost::multi_index::composite_key<
                 types::Route,
-                boost::multi_index::member<types::Route, types::RouteStatus,
-                                           &types::Route::status>,
+                boost::multi_index::member<types::Route, types::RouteStatus, &types::Route::status>,
                 boost::multi_index::member<types::Route, types::IdType,
                                            &types::Route::order_id>>>>>;
 

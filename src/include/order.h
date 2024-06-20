@@ -21,8 +21,7 @@ struct order_by_basket_idx {};
 struct basketIdOrderIdx {
   typedef std::size_t result_type;
   result_type operator()(const types::Order &entry) const {
-    return (entry.basket_id.has_value()) ? boost::hash_value(entry.id)
-                                         : boost::hash_value(0u);
+    return (entry.basket_id.has_value()) ? boost::hash_value(entry.id) : boost::hash_value(0u);
   }
 };
 
@@ -33,8 +32,7 @@ using Order = boost::multi_index_container<
     boost::multi_index::indexed_by<
         boost::multi_index::hashed_unique<
             boost::multi_index::tag<order_by_idx>,
-            boost::multi_index::member<types::Order, types::IdType,
-                                       &types::Order::id>>,
+            boost::multi_index::member<types::Order, types::IdType, &types::Order::id>>,
         boost::multi_index::hashed_unique<
             boost::multi_index::tag<order_by_clord_idx>,
             boost::multi_index::member<types::Order, types::FixClOrdIdType,
@@ -43,8 +41,8 @@ using Order = boost::multi_index_container<
             boost::multi_index::tag<order_by_parent_idx>,
             boost::multi_index::member<types::Order, types::IdType,
                                        &types::Order::parent_order_id>>,
-        boost::multi_index::hashed_non_unique<
-            boost::multi_index::tag<order_by_basket_idx>, basketIdOrderIdx>>>;
+        boost::multi_index::hashed_non_unique<boost::multi_index::tag<order_by_basket_idx>,
+                                              basketIdOrderIdx>>>;
 
 using OrderByIdxType = Order::index<order_by_idx>::type;
 using OrderByClordIdType = Order::index<order_by_clord_idx>::type;

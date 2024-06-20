@@ -27,38 +27,29 @@ using Fill = boost::multi_index_container<
     boost::multi_index::indexed_by<
         boost::multi_index::hashed_unique<
             boost::multi_index::tag<fill_by_idx>,
-            boost::multi_index::member<types::Fill, types::IdType,
-                                       &types::Fill::id>>,
+            boost::multi_index::member<types::Fill, types::IdType, &types::Fill::id>>,
         boost::multi_index::hashed_unique<
             boost::multi_index::tag<fill_by_exec_idx>,
-            boost::multi_index::member<types::Fill, types::FixClOrdIdType,
-                                       &types::Fill::exec_id>>,
+            boost::multi_index::member<types::Fill, types::FixClOrdIdType, &types::Fill::exec_id>>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<fill_by_route_idx>,
-            boost::multi_index::member<types::Fill, types::IdType,
-                                       &types::Fill::route_id>>,
+            boost::multi_index::member<types::Fill, types::IdType, &types::Fill::route_id>>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<fill_by_order_idx>,
-            boost::multi_index::member<types::Fill, types::IdType,
-                                       &types::Fill::order_id>>,
+            boost::multi_index::member<types::Fill, types::IdType, &types::Fill::order_id>>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<fill_by_status_order_idx>,
             boost::multi_index::composite_key<
                 types::Fill,
-                boost::multi_index::member<types::Fill, types::ExecStatus,
-                                           &types::Fill::status>,
-                boost::multi_index::member<types::Fill, types::IdType,
-                                           &types::Fill::order_id>>>,
+                boost::multi_index::member<types::Fill, types::ExecStatus, &types::Fill::status>,
+                boost::multi_index::member<types::Fill, types::IdType, &types::Fill::order_id>>>,
         boost::multi_index::hashed_non_unique<
             boost::multi_index::tag<fill_by_status_order_route_idx>,
             boost::multi_index::composite_key<
                 types::Fill,
-                boost::multi_index::member<types::Fill, types::ExecStatus,
-                                           &types::Fill::status>,
-                boost::multi_index::member<types::Fill, types::IdType,
-                                           &types::Fill::order_id>,
-                boost::multi_index::member<types::Fill, types::IdType,
-                                           &types::Fill::route_id>>>>>;
+                boost::multi_index::member<types::Fill, types::ExecStatus, &types::Fill::status>,
+                boost::multi_index::member<types::Fill, types::IdType, &types::Fill::order_id>,
+                boost::multi_index::member<types::Fill, types::IdType, &types::Fill::route_id>>>>>;
 
 using FillByIdxType = Fill::index<fill_by_idx>::type;
 using FillByExecIdType = Fill::index<fill_by_exec_idx>::type;

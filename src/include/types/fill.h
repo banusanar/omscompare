@@ -33,8 +33,7 @@ struct Fill {
   IdType order_id;
   FixExecIdType exec_id;
   ExecStatus status;
-  std::optional<IdType>
-      original_id; // If this is a corrected fill, what was the original id
+  std::optional<IdType> original_id; // If this is a corrected fill, what was the original id
   std::byte data[DATA_SIZE];
 };
 

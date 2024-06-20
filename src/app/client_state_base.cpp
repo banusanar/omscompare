@@ -7,8 +7,7 @@ namespace model {
 
 using Error = types::Error;
 
-tl::expected<types::Order, Error>
-ClientStateBase::findOrder(types::IdType orderid) const {
+tl::expected<types::Order, Error> ClientStateBase::findOrder(types::IdType orderid) const {
   return findOrder(orderid);
 }
 
@@ -17,13 +16,11 @@ ClientStateBase::findOrderByClordId(types::FixClOrdIdType clordid) const {
   return findOrderByClordId(clordid);
 }
 
-tl::expected<types::Basket, Error>
-ClientStateBase::findBasket(types::IdType basketid) const {
+tl::expected<types::Basket, Error> ClientStateBase::findBasket(types::IdType basketid) const {
   return findBasket(basketid);
 }
 
-tl::expected<types::Route, Error>
-ClientStateBase::findRoute(types::IdType routeid) const {
+tl::expected<types::Route, Error> ClientStateBase::findRoute(types::IdType routeid) const {
   return findRoute(routeid);
 }
 
@@ -32,13 +29,11 @@ ClientStateBase::findRouteByClordId(types::FixClOrdIdType clordid) const {
   return findRouteByClordId(clordid);
 }
 
-tl::expected<types::Fill, Error>
-ClientStateBase::findFill(types::IdType fillid) const {
+tl::expected<types::Fill, Error> ClientStateBase::findFill(types::IdType fillid) const {
   return findFill(fillid);
 }
 
-std::vector<types::Order>
-ClientStateBase::findOrdersForBasketId(types::IdType basket_id) const {
+std::vector<types::Order> ClientStateBase::findOrdersForBasketId(types::IdType basket_id) const {
   return findOrdersForBasketId(basket_id);
 }
 
@@ -49,14 +44,12 @@ ClientStateBase::findRoutesForOrderId(types::IdType order_id,
 }
 
 std::vector<types::Fill>
-ClientStateBase::findFillsForRouteId(types::IdType route_id,
-                                     types::ExecStatus status_match) const {
+ClientStateBase::findFillsForRouteId(types::IdType route_id, types::ExecStatus status_match) const {
   return findFillsForRouteId(route_id, status_match);
 }
 
 std::vector<types::Fill>
-ClientStateBase::findFillsForOrderId(types::IdType order_id,
-                                     types::ExecStatus status_match) const {
+ClientStateBase::findFillsForOrderId(types::IdType order_id, types::ExecStatus status_match) const {
   return findFillsForOrderId(order_id, status_match);
 }
 
