@@ -41,17 +41,17 @@ public:
   addOrderForBasket(types::Order &&, types::IdType basket_id) override;
   virtual tl::expected<types::IdType, types::Error>
   addFillForRoute(types::Fill &&, types::IdType route_id) override;
-  virtual tl::expected<types::IdType, types::Error>
-  addFillForOrderRoute(types::Fill &&, types::IdType route_id, types::IdType order_id) override;
+  // virtual tl::expected<types::IdType, types::Error>
+  // addFillForOrderRoute(types::Fill &&, types::IdType route_id, types::IdType order_id) override;
 
-  virtual tl::expected<void, types::Error> updateOrder(types::Order &&) override;
+  // virtual tl::expected<void, types::Error> updateOrder(types::Order &&) override;
   virtual tl::expected<void, types::Error> updateRouteForOrder(types::Route &&) override;
-  virtual tl::expected<void, types::Error> updateFillForRoute(types::Fill &&) override;
+  // virtual tl::expected<void, types::Error> updateFillForRoute(types::Fill &&) override;
 
-  virtual tl::expected<void, types::Error> deleteBasket(types::IdType basket_id) override;
-  virtual tl::expected<void, types::Error> deleteOrder(types::IdType order_id) override;
-  virtual tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id) override;
-  virtual tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id) override;
+  // virtual tl::expected<void, types::Error> deleteBasket(types::IdType basket_id) override;
+  // virtual tl::expected<void, types::Error> deleteOrder(types::IdType order_id) override;
+  // virtual tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id) override;
+  // virtual tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id) override;
 
   // void status() {
   //   for (auto &[s, m] : metrics_) {

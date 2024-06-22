@@ -57,17 +57,17 @@ public:
                                                                       types::IdType basket_id) = 0;
   virtual tl::expected<types::IdType, types::Error> addFillForRoute(types::Fill &&,
                                                                     types::IdType route_id) = 0;
-  virtual tl::expected<types::IdType, types::Error>
-  addFillForOrderRoute(types::Fill &&, types::IdType route_id, types::IdType order_id) = 0;
+  // virtual tl::expected<types::IdType, types::Error>
+  // addFillForOrderRoute(types::Fill &&, types::IdType route_id, types::IdType order_id) = 0;
 
-  virtual tl::expected<void, types::Error> updateOrder(types::Order &&) = 0;
+  // virtual tl::expected<void, types::Error> updateOrder(types::Order &&) = 0;
   virtual tl::expected<void, types::Error> updateRouteForOrder(types::Route &&) = 0;
-  virtual tl::expected<void, types::Error> updateFillForRoute(types::Fill &&) = 0;
+  // virtual tl::expected<void, types::Error> updateFillForRoute(types::Fill &&) = 0;
 
-  virtual tl::expected<void, types::Error> deleteBasket(types::IdType basket_id) = 0;
-  virtual tl::expected<void, types::Error> deleteOrder(types::IdType order_id) = 0;
-  virtual tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id) = 0;
-  virtual tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id) = 0;
+  // virtual tl::expected<void, types::Error> deleteBasket(types::IdType basket_id) = 0;
+  // virtual tl::expected<void, types::Error> deleteOrder(types::IdType order_id) = 0;
+  // virtual tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id) = 0;
+  // virtual tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id) = 0;
 };
 
 } // namespace model

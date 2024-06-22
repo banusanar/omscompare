@@ -7,7 +7,8 @@
 
 namespace SQLite {
 class Database;
-}
+class Statement;
+} // namespace SQLite
 
 namespace omscompare {
 namespace model {
@@ -41,24 +42,23 @@ public:
   addOrderForBasket(types::Order &&, types::IdType basket_id) override;
   virtual tl::expected<types::IdType, types::Error>
   addFillForRoute(types::Fill &&, types::IdType route_id) override;
-  virtual tl::expected<types::IdType, types::Error>
-  addFillForOrderRoute(types::Fill &&, types::IdType route_id, types::IdType order_id) override;
+  // virtual tl::expected<types::IdType, types::Error>
+  // addFillForOrderRoute(types::Fill &&, types::IdType route_id, types::IdType order_id) override;
 
-  virtual tl::expected<void, types::Error> updateOrder(types::Order &&) override;
+  // virtual tl::expected<void, types::Error> updateOrder(types::Order &&) override;
   virtual tl::expected<void, types::Error> updateRouteForOrder(types::Route &&) override;
-  virtual tl::expected<void, types::Error> updateFillForRoute(types::Fill &&) override;
+  // virtual tl::expected<void, types::Error> updateFillForRoute(types::Fill &&) override;
 
-  virtual tl::expected<void, types::Error> deleteBasket(types::IdType basket_id) override;
-  virtual tl::expected<void, types::Error> deleteOrder(types::IdType order_id) override;
-  virtual tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id) override;
-  virtual tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id) override;
+  // virtual tl::expected<void, types::Error> deleteBasket(types::IdType basket_id) override;
+  // virtual tl::expected<void, types::Error> deleteOrder(types::IdType order_id) override;
+  // virtual tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id) override;
+  // virtual tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id) override;
 
 private:
   std::shared_ptr<SQLite::Database> dbh;
 
-  void create_table(const std::string &sql); // throws instead of returning error
-  tl::expected<void, types::Error> select(const std::string &sql);
-  tl::expected<void, types::Error> insert(const std::string &sql);
+  void createTableSql(const std::string &sql); // throws instead of returning error
+  tl::expected<void, types::Error> updateSql(SQLite::Statement &query);
   std::string client_schema;
 };
 

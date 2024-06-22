@@ -3,10 +3,12 @@
 #include "types/fill.h"
 #include "types/order.h"
 #include "types/route.h"
+#include <SQLiteCpp/Exception.h>
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <SQLiteCpp/Statement.h>
 #include <client_state_sqlite.h>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -27,7 +29,20 @@ const std::string select_route = "SELECT sid, clord_id, order_id, status, broker
 const std::string select_fill =
     "SELECT sid, exec_id, order_id, route_id, status, original_id, data FROM ";
 
-types::Order &&getOrderFromSql(SQLite::Statement &query) {
+const std::string insert_basket = ".baskets (sid, name, active) VALUES (?sid,?n,?a);";
+const std::string insert_order = ".orders (sid, clord_id, parent_order_id, basket_id, data) VALUES "
+                                 "(?sid,?c_id,?p_o_id,?b_id,?data);";
+const std::string insert_route = ".routes (sid, clord_id, order_id, status, broker, data) VALUES "
+                                 "(?sid,?c_id,?o_id,?s,?b,?data);";
+const std::string insert_fill = ".fills (sid, exec_id, order_id, route_id, status, data) VALUES "
+                                "(?sid,?e_id,?o_id,?r_id,?s,?data);";
+const std::string insert_corrected_fill =
+    ".fills (sid, exec_id, order_id, route_id, status, original_id, data) VALUES "
+    "(?sid,?e_id,?o_id,?r_id,?s,?orig_id,?data);";
+const std::string update_route =
+    ".routes (sid, clord_id, order_id, status, broker, data) VALUES (?sid,?c_id,?o_id,?s,?b,?data)";
+
+types::Order getOrderFromSql(SQLite::Statement &query) {
   types::Order o = {.id = static_cast<types::IdType>(query.getColumn(0).getInt64()),
                     .clord_id = query.getColumn(1).getString(),
                     .parent_order_id = static_cast<types::IdType>(query.getColumn(2).getInt64())};
@@ -38,13 +53,13 @@ types::Order &&getOrderFromSql(SQLite::Statement &query) {
   return std::move(o);
 }
 
-types::Basket &&getBasketFromSql(SQLite::Statement &query) {
+types::Basket getBasketFromSql(SQLite::Statement &query) {
   return std::move(types::Basket{.id = static_cast<types::IdType>(query.getColumn(0).getInt64()),
                                  .name = query.getColumn(1).getString(),
                                  .is_active = (query.getColumn(2).getUInt() == 1) ? true : false});
 }
 
-types::Route &&getRouteFromSql(SQLite::Statement &query) {
+types::Route getRouteFromSql(SQLite::Statement &query) {
   types::Route r{.id = static_cast<types::IdType>(query.getColumn(0).getInt64()),
                  .order_id = static_cast<types::IdType>(query.getColumn(2).getInt64()),
                  .clord_id = query.getColumn(1).getString(),
@@ -69,7 +84,7 @@ types::Fill &&getFillFromSql(SQLite::Statement &query) {
 }
 } // namespace
 
-void ClientStateSqlite::create_table(const std::string &sql) {
+void ClientStateSqlite::createTableSql(const std::string &sql) {
   if (dbh->exec(sql) != SQLite::OK) {
     std::cerr << "[" << sql << "] failed. " << std::endl;
     throw std::runtime_error(dbh->getErrorMsg());
@@ -84,7 +99,15 @@ void ClientStateSqlite::create_table(const std::string &sql) {
 //    }
 // }
 
-// bool insert(const std::string& sql)
+tl::expected<void, types::Error> ClientStateSqlite::updateSql(SQLite::Statement &query) {
+  try {
+    int rc = query.exec();
+  } catch (const SQLite::Exception &ae) {
+    return tl::make_unexpected(types::Error{.what = dbh->getErrorMsg()});
+  }
+  return {};
+}
+
 ClientStateSqlite::ClientStateSqlite(types::ClientIdType client_id)
     : dbh(std::make_shared<SQLite::Database>(":memory:",
                                              SQLite::OPEN_MEMORY | SQLite::OPEN_NOMUTEX)),
@@ -96,7 +119,7 @@ ClientStateSqlite::ClientStateSqlite(types::ClientIdType client_id)
   const std::string create_index = "CREATE INDEX ";
   std::stringstream ss;
   auto db_exec = [&, this](const std::string &sql) {
-    this->create_table(sql);
+    this->createTableSql(sql);
     ss.str("");
   };
 
@@ -310,23 +333,114 @@ std::vector<types::Fill> ClientStateSqlite::findFillsForOrderId(types::IdType or
   return fills;
 }
 
-tl::expected<types::IdType, types::Error> addBasket(types::Basket &&);
-tl::expected<types::IdType, types::Error> addOrder(types::Order &&);
-tl::expected<types::IdType, types::Error> addRouteForOrder(types::Route &&, types::IdType order_id);
-tl::expected<types::IdType, types::Error> addOrderForBasket(types::Order &&,
-                                                            types::IdType basket_id);
-tl::expected<types::IdType, types::Error> addFillForRoute(types::Fill &&, types::IdType route_id);
+tl::expected<types::IdType, types::Error> ClientStateSqlite::addBasket(types::Basket &&basket) {
+  std::stringstream ss;
+  ss << "INSERT INTO " << client_schema << insert_basket;
+  SQLite::Statement query(*dbh, ss.str());
+  query.bind("?sid", static_cast<int64_t>(basket.id));
+  query.bind("?n", basket.name);
+  query.bind("?a", (int)(basket.is_active ? 1 : 0));
+  auto r = updateSql(query);
+  if (r.has_value()) {
+    return {basket.id};
+  }
+  return tl::make_unexpected(r.error());
+}
+
+tl::expected<types::IdType, types::Error> ClientStateSqlite::addOrder(types::Order &&order) {
+  std::stringstream ss;
+  ss << "INSERT INTO " << client_schema << insert_order;
+  SQLite::Statement query(*dbh, ss.str());
+  query.bind("?sid", static_cast<int64_t>(order.id));
+  query.bind("?c_id", order.clord_id);
+  if (order.parent_order_id == 0) {
+    query.bind("?p_o_id");
+  } else {
+    query.bind("?p_o_id", static_cast<int64_t>(order.parent_order_id));
+  }
+  if (order.basket_id.has_value()) {
+    query.bind("?b_id", static_cast<int64_t>(order.basket_id.value()));
+  } else {
+    query.bind("?b_id");
+  }
+  query.bindNoCopy("?data", order.data, sizeof(order.data));
+  auto r = updateSql(query);
+  if (r.has_value()) {
+    return {order.id};
+  }
+  return tl::make_unexpected(r.error());
+}
+
 tl::expected<types::IdType, types::Error>
-addFillForOrderRoute(types::Fill &&, types::IdType route_id, types::IdType order_id);
+ClientStateSqlite::addRouteForOrder(types::Route &&route, types::IdType order_id) {
+  std::stringstream ss;
+  ss << "INSERT INTO " << client_schema << insert_route;
+  SQLite::Statement query(*dbh, ss.str());
+  query.bind("?sid", static_cast<int64_t>(route.id));
+  query.bind("?c_id", route.clord_id);
+  query.bind("?o_id", static_cast<int64_t>(order_id));
+  query.bind("?s", static_cast<int>(route.status));
+  query.bind("?b", route.broker);
+  query.bindNoCopy("?data", route.data, sizeof(route.data));
+  auto r = updateSql(query);
+  if (r.has_value()) {
+    return {route.id};
+  }
+  return tl::make_unexpected(r.error());
+}
 
-tl::expected<void, types::Error> updateOrder(types::Order &&);
-tl::expected<void, types::Error> updateRouteForOrder(types::Route &&);
-tl::expected<void, types::Error> updateFillForRoute(types::Fill &&);
+tl::expected<types::IdType, types::Error>
+ClientStateSqlite::addOrderForBasket(types::Order &&order, types::IdType basket_id) {
+  std::stringstream ss;
+  ss << "INSERT INTO " << client_schema << insert_order;
+  SQLite::Statement query(*dbh, ss.str());
+  query.bind("?sid", static_cast<int64_t>(order.id));
+  query.bind("?c_id", order.clord_id);
+  if (order.parent_order_id == 0) {
+    query.bind("?p_o_id");
+  } else {
+    query.bind("?p_o_id", static_cast<int64_t>(order.parent_order_id));
+  }
+  query.bind("?b_id", static_cast<int64_t>(basket_id));
+  query.bindNoCopy("?data", order.data, sizeof(order.data));
+  auto r = updateSql(query);
+  if (r.has_value()) {
+    return {order.id};
+  }
+  return tl::make_unexpected(r.error());
+}
 
-tl::expected<void, types::Error> deleteBasket(types::IdType basket_id);
-tl::expected<void, types::Error> deleteOrder(types::IdType order_id);
-tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id);
-tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id);
+tl::expected<types::IdType, types::Error>
+ClientStateSqlite::addFillForRoute(types::Fill &&fill, types::IdType route_id) {
+  std::stringstream ss;
+  ss << "INSERT INTO " << client_schema << insert_fill;
+  SQLite::Statement query(*dbh, ss.str());
+  query.bind("?sid", static_cast<int64_t>(fill.id));
+  query.bind("?e_id", fill.exec_id);
+  query.bind("?o_id", static_cast<int64_t>(fill.order_id));
+  query.bind("?r_id", static_cast<int64_t>(route_id));
+  query.bind("?s", static_cast<int>(fill.status));
+  query.bindNoCopy("?data", fill.data, sizeof(fill.data));
+  auto r = updateSql(query);
+  if (r.has_value()) {
+    return {fill.id};
+  }
+  return tl::make_unexpected(r.error());
+}
+
+tl::expected<void, types::Error> ClientStateSqlite::updateRouteForOrder(types::Route &&route) {
+  std::stringstream ss;
+  ss << "UPDATE " << client_schema << update_route << " WHERE " << client_schema
+     << ".routes.sid==" << route.id << ";";
+  SQLite::Statement query(*dbh, ss.str());
+  query.bind("?sid", static_cast<int64_t>(route.id));
+  query.bind("?c_id", route.clord_id);
+  query.bind("?o_id", static_cast<int64_t>(route.order_id));
+  query.bind("?s", static_cast<int>(route.status));
+  query.bind("?b", route.broker);
+  query.bindNoCopy("?data", route.data, sizeof(route.data));
+  return updateSql(query);
+}
 
 } // namespace model
 } // namespace omscompare

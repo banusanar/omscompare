@@ -212,30 +212,30 @@ tl::expected<types::IdType, Error> ClientState::addFillForRoute(types::Fill &&fi
   });
 }
 
-tl::expected<types::IdType, Error> ClientState::addFillForOrderRoute(types::Fill &&fill,
-                                                                     types::IdType route_id,
-                                                                     types::IdType order_id) {
-  return findOrder(order_id).and_then([&](types::Order) -> tl::expected<types::IdType, Error> {
-    return findRoute(route_id).and_then([&](types::Route) -> tl::expected<types::IdType, Error> {
-      auto [iter, result] = fills_.insert(fill);
-      if (!result)
-        return tl::make_unexpected(Error{.what = "Found Route. Fill insert failed"});
-      if ((fills_.size() % BENCHMARK_SIZE) == 0) {
-        std::cerr << "fills_ at " << fills_.size() << std::endl;
-      }
-      return {iter->id};
-    });
-  });
-}
+// tl::expected<types::IdType, Error> ClientState::addFillForOrderRoute(types::Fill &&fill,
+//                                                                      types::IdType route_id,
+//                                                                      types::IdType order_id) {
+//   return findOrder(order_id).and_then([&](types::Order) -> tl::expected<types::IdType, Error> {
+//     return findRoute(route_id).and_then([&](types::Route) -> tl::expected<types::IdType, Error> {
+//       auto [iter, result] = fills_.insert(fill);
+//       if (!result)
+//         return tl::make_unexpected(Error{.what = "Found Route. Fill insert failed"});
+//       if ((fills_.size() % BENCHMARK_SIZE) == 0) {
+//         std::cerr << "fills_ at " << fills_.size() << std::endl;
+//       }
+//       return {iter->id};
+//     });
+//   });
+// }
 
-tl::expected<void, Error> ClientState::updateOrder(types::Order &&order) {
-  return findOrder(order.id).and_then([&](types::Order) -> tl::expected<void, Error> {
-    auto [iter, result] = orders_.insert(order);
-    if (result) // This cannot be a new element. result is false
-      return tl::make_unexpected(Error{.what = "Update failed. "});
-    return {};
-  });
-}
+// tl::expected<void, Error> ClientState::updateOrder(types::Order &&order) {
+//   return findOrder(order.id).and_then([&](types::Order) -> tl::expected<void, Error> {
+//     auto [iter, result] = orders_.insert(order);
+//     if (result) // This cannot be a new element. result is false
+//       return tl::make_unexpected(Error{.what = "Update failed. "});
+//     return {};
+//   });
+// }
 
 tl::expected<void, Error> ClientState::updateRouteForOrder(types::Route &&route) {
   return findRoute(route.id).and_then([&](types::Route) -> tl::expected<void, Error> {
@@ -246,50 +246,50 @@ tl::expected<void, Error> ClientState::updateRouteForOrder(types::Route &&route)
   });
 }
 
-tl::expected<void, Error> ClientState::updateFillForRoute(types::Fill &&fill) {
-  return findFill(fill.id).and_then([&](types::Fill) -> tl::expected<void, Error> {
-    auto [iter, result] = fills_.insert(fill);
-    if (result)
-      return tl::make_unexpected(Error{.what = "Update failed. "});
-    return {};
-  });
-}
+// tl::expected<void, Error> ClientState::updateFillForRoute(types::Fill &&fill) {
+//   return findFill(fill.id).and_then([&](types::Fill) -> tl::expected<void, Error> {
+//     auto [iter, result] = fills_.insert(fill);
+//     if (result)
+//       return tl::make_unexpected(Error{.what = "Update failed. "});
+//     return {};
+//   });
+// }
 
-tl::expected<void, Error> ClientState::deleteBasket(types::IdType basket_id) {
-  auto x = baskets_.get<basket_by_idx>().find(basket_id);
-  if (x == baskets_.end()) {
-    return tl::make_unexpected(Error{.what = "Invalid basketid. Cannot delete"});
-  }
-  baskets_.erase(x);
-  return {};
-}
+// tl::expected<void, Error> ClientState::deleteBasket(types::IdType basket_id) {
+//   auto x = baskets_.get<basket_by_idx>().find(basket_id);
+//   if (x == baskets_.end()) {
+//     return tl::make_unexpected(Error{.what = "Invalid basketid. Cannot delete"});
+//   }
+//   baskets_.erase(x);
+//   return {};
+// }
 
-tl::expected<void, Error> ClientState::deleteOrder(types::IdType order_id) {
-  auto x = orders_.get<order_by_idx>().find(order_id);
-  if (x == orders_.end()) {
-    return tl::make_unexpected(Error{.what = "Invalid orderid. Cannot delete"});
-  }
-  orders_.erase(x);
-  return {};
-}
+// tl::expected<void, Error> ClientState::deleteOrder(types::IdType order_id) {
+//   auto x = orders_.get<order_by_idx>().find(order_id);
+//   if (x == orders_.end()) {
+//     return tl::make_unexpected(Error{.what = "Invalid orderid. Cannot delete"});
+//   }
+//   orders_.erase(x);
+//   return {};
+// }
 
-tl::expected<void, Error> ClientState::deleteRouteForOrder(types::IdType route_id) {
-  auto x = routes_.get<route_by_idx>().find(route_id);
-  if (x == routes_.end()) {
-    return tl::make_unexpected(Error{.what = "Invalid routeid. Cannot delete"});
-  }
-  routes_.erase(x);
-  return {};
-}
+// tl::expected<void, Error> ClientState::deleteRouteForOrder(types::IdType route_id) {
+//   auto x = routes_.get<route_by_idx>().find(route_id);
+//   if (x == routes_.end()) {
+//     return tl::make_unexpected(Error{.what = "Invalid routeid. Cannot delete"});
+//   }
+//   routes_.erase(x);
+//   return {};
+// }
 
-tl::expected<void, Error> ClientState::deleteFillForRoute(types::IdType fill_id) {
-  auto x = fills_.get<fill_by_idx>().find(fill_id);
-  if (x == fills_.end()) {
-    return tl::make_unexpected(Error{.what = "Invalid fill_id. Cannot delete"});
-  }
-  fills_.erase(x);
-  return {};
-}
+// tl::expected<void, Error> ClientState::deleteFillForRoute(types::IdType fill_id) {
+//   auto x = fills_.get<fill_by_idx>().find(fill_id);
+//   if (x == fills_.end()) {
+//     return tl::make_unexpected(Error{.what = "Invalid fill_id. Cannot delete"});
+//   }
+//   fills_.erase(x);
+//   return {};
+// }
 
 } // namespace model
 } // namespace omscompare
