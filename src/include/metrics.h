@@ -28,10 +28,14 @@ public:
 
   constexpr uint64_t getCount() const { return count; }
   constexpr double getTimeTaken() const { return total_time_since_count; }
+  constexpr double getAverageTimeTaken() const { return average_time_per_instance; }
+  constexpr uint64_t getEventsAboveAverage() const { return events_above_average; }
 
 private:
   uint64_t count{0};
+  uint64_t events_above_average{0};
   double total_time_since_count{0.0};
+  double average_time_per_instance{0.0};
   std::chrono::steady_clock::time_point begin_start_of_operation;
 };
 

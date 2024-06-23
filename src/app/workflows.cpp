@@ -30,9 +30,16 @@ void generateRandomObj(std::byte *data, int size) {
 
 auto print_stats = [](const model::Counter &lhs, std::string oper) {
   if (lhs.getCount() > 0) {
-    auto avg = lhs.getTimeTaken() / lhs.getCount();
-    std::cout << "Each " << oper << " took an avg of " << std::setprecision(6)
-              << std::ios_base::fixed << avg << " msecs." << std::endl;
+    std::cout << lhs.getCount() << " operations took " << std::setprecision(6) << std::ios_base::fixed;
+    if (lhs.getTimeTaken() < 100000) {
+      std::cout << lhs.getTimeTaken() << " msecs." << std::endl;
+    } else {
+      std::cout << lhs.getTimeTaken() / 100000 << " secs." << std::endl;
+    }
+    std::cout << "Each operation took an avg of " << std::setprecision(6)
+              << std::ios_base::fixed << lhs.getAverageTimeTaken() << " msecs." << std::endl;
+    std::cout << lhs.getEventsAboveAverage() << " events took more than 5\% above the average time"
+              << std::endl;
   }
 };
 
@@ -46,19 +53,19 @@ WorkFlow::WorkFlow(std::string wf_name, Client &client)
 }
 
 WorkFlow::~WorkFlow() {
-  const auto totaltime =
-      metric_.readCounter().getTimeTaken() + metric_.writeCounter().getTimeTaken();
-  const auto totalcount = metric_.readCounter().getCount() + metric_.writeCounter().getCount();
-  if (totaltime < 100000) {
-    std::cout << totalcount << " operations took " << std::setprecision(6) << std::ios_base::fixed
-              << totaltime << " msecs." << std::endl;
-  } else {
-    std::cout << totalcount << " operations took " << std::setprecision(6) << std::ios_base::fixed
-              << totaltime / 100000 << " secs." << std::endl;
-  }
+  // const auto totaltime =
+  //     metric_.readCounter().getTimeTaken() + metric_.writeCounter().getTimeTaken();
+  // const auto totalcount = metric_.readCounter().getCount() + metric_.writeCounter().getCount();
+  // if (totaltime < 100000) {
+  //   std::cout << totalcount << " operations took " << std::setprecision(6) << std::ios_base::fixed
+  //             << totaltime << " msecs." << std::endl;
+  // } else {
+  //   std::cout << totalcount << " operations took " << std::setprecision(6) << std::ios_base::fixed
+  //             << totaltime / 100000 << " secs." << std::endl;
+  // }
 
   print_stats(metric_.readCounter(), "read");
-  print_stats(metric_.writeCounter(), "write");
+  //print_stats(metric_.writeCounter(), "write");
 }
 
 WorkFlow::Scope::Scope(model::Metrics &m) : m(m) { m.readCounter().start_watch(); }
