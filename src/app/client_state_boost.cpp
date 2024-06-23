@@ -1,6 +1,6 @@
 #include <basket.h>
 #include <bits/ranges_base.h>
-#include <client_state.h>
+#include <client_state_boost.h>
 #include <fill.h>
 #include <metrics.h>
 #include <order.h>
@@ -35,7 +35,7 @@ ClientState::ClientState() : baskets_(), orders_(), routes_(), fills_() {}
 //   // }
 // }
 
-tl::expected<types::Order, Error> ClientState::findOrder(types::IdType orderid) {
+tl::expected<types::Order, Error> ClientState::findOrder(types::IdType orderid) const {
   auto x = orders_.get<order_by_idx>().find(orderid);
   if (x == orders_.get<order_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid orderid"});
@@ -43,7 +43,8 @@ tl::expected<types::Order, Error> ClientState::findOrder(types::IdType orderid) 
   return {*x};
 }
 
-tl::expected<types::Order, Error> ClientState::findOrderByClordId(types::FixClOrdIdType clordid) {
+tl::expected<types::Order, Error>
+ClientState::findOrderByClordId(types::FixClOrdIdType clordid) const {
   OrderByClordIdType::iterator x = orders_.get<order_by_clord_idx>().find(clordid);
   if (x == orders_.get<order_by_clord_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid orderid"});
@@ -51,7 +52,7 @@ tl::expected<types::Order, Error> ClientState::findOrderByClordId(types::FixClOr
   return {*x};
 }
 
-tl::expected<types::Basket, Error> ClientState::findBasket(types::IdType basketid) {
+tl::expected<types::Basket, Error> ClientState::findBasket(types::IdType basketid) const {
   BasketByIdxType::iterator x = baskets_.get<basket_by_idx>().find(basketid);
   if (x == baskets_.get<basket_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid basketid"});
@@ -59,7 +60,7 @@ tl::expected<types::Basket, Error> ClientState::findBasket(types::IdType basketi
   return {*x};
 }
 
-tl::expected<types::Route, Error> ClientState::findRoute(types::IdType routeid) {
+tl::expected<types::Route, Error> ClientState::findRoute(types::IdType routeid) const {
   RouteByIdxType::iterator x = routes_.get<route_by_idx>().find(routeid);
   if (x == routes_.get<route_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid routeid"});
@@ -67,7 +68,8 @@ tl::expected<types::Route, Error> ClientState::findRoute(types::IdType routeid) 
   return {*x};
 }
 
-tl::expected<types::Route, Error> ClientState::findRouteByClordId(types::FixClOrdIdType clordid) {
+tl::expected<types::Route, Error>
+ClientState::findRouteByClordId(types::FixClOrdIdType clordid) const {
   RouteByClordIdType::iterator x = routes_.get<route_by_clord_idx>().find(clordid);
   if (x == routes_.get<route_by_clord_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid routeid"});
@@ -75,7 +77,7 @@ tl::expected<types::Route, Error> ClientState::findRouteByClordId(types::FixClOr
   return {*x};
 }
 
-tl::expected<types::Fill, Error> ClientState::findFill(types::IdType fillid) {
+tl::expected<types::Fill, Error> ClientState::findFill(types::IdType fillid) const {
   FillByIdxType::iterator x = fills_.get<fill_by_idx>().find(fillid);
   if (x == fills_.get<fill_by_idx>().end()) {
     return tl::make_unexpected(Error{.what = "Invalid fillid"});
@@ -83,7 +85,7 @@ tl::expected<types::Fill, Error> ClientState::findFill(types::IdType fillid) {
   return {*x};
 }
 
-std::vector<types::Order> ClientState::findOrdersForBasketId(types::IdType basket_id) {
+std::vector<types::Order> ClientState::findOrdersForBasketId(types::IdType basket_id) const {
   std::pair<OrderByBasketIdType::iterator, OrderByBasketIdType::iterator> x =
       orders_.get<order_by_basket_idx>().equal_range(basket_id);
   auto start = std::get<0>(x);
@@ -100,7 +102,7 @@ std::vector<types::Order> ClientState::findOrdersForBasketId(types::IdType baske
 }
 
 std::vector<types::Route> ClientState::findRoutesForOrderId(types::IdType order_id,
-                                                            types::RouteStatus status_match) {
+                                                            types::RouteStatus status_match) const {
   using RouteStatusPairType = std::pair<Route::index<route_by_status_order_idx>::type::iterator,
                                         Route::index<route_by_status_order_idx>::type::iterator>;
 
@@ -120,7 +122,7 @@ std::vector<types::Route> ClientState::findRoutesForOrderId(types::IdType order_
 }
 
 std::vector<types::Fill> ClientState::findFillsForRouteId(types::IdType route_id,
-                                                          types::ExecStatus status_match) {
+                                                          types::ExecStatus status_match) const {
   auto [start, end] = fills_.get<fill_by_route_idx>().equal_range(route_id);
   if (start == end) {
     return {};
@@ -135,7 +137,7 @@ std::vector<types::Fill> ClientState::findFillsForRouteId(types::IdType route_id
 }
 
 std::vector<types::Fill> ClientState::findFillsForOrderId(types::IdType order_id,
-                                                          types::ExecStatus status_match) {
+                                                          types::ExecStatus status_match) const {
   auto [start, end] =
       fills_.get<fill_by_status_order_idx>().equal_range(std::make_tuple(status_match, order_id));
   if (start == end) {

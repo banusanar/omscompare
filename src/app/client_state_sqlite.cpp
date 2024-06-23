@@ -205,7 +205,7 @@ ClientStateSqlite::ClientStateSqlite(types::ClientIdType client_id)
   }
 }
 
-tl::expected<types::Order, types::Error> ClientStateSqlite::findOrder(types::IdType orderid) {
+tl::expected<types::Order, types::Error> ClientStateSqlite::findOrder(types::IdType orderid) const {
   std::stringstream ss;
   ss << select_order << client_schema << ".orders WHERE "
      << " sid = " << orderid << ";";
@@ -218,7 +218,7 @@ tl::expected<types::Order, types::Error> ClientStateSqlite::findOrder(types::IdT
 }
 
 tl::expected<types::Order, types::Error>
-ClientStateSqlite::findOrderByClordId(types::FixClOrdIdType clordid) {
+ClientStateSqlite::findOrderByClordId(types::FixClOrdIdType clordid) const {
   std::stringstream ss;
   ss << select_order << client_schema << ".orders WHERE "
      << " clord_id = " << clordid << ";";
@@ -230,7 +230,7 @@ ClientStateSqlite::findOrderByClordId(types::FixClOrdIdType clordid) {
   return {getOrderFromSql(query)};
 }
 
-std::vector<types::Order> ClientStateSqlite::findOrdersForBasketId(types::IdType basket_id) {
+std::vector<types::Order> ClientStateSqlite::findOrdersForBasketId(types::IdType basket_id) const {
   std::stringstream ss;
   ss << select_order << client_schema << ".orders WHERE "
      << " basket_id = " << basket_id << ";";
@@ -242,7 +242,8 @@ std::vector<types::Order> ClientStateSqlite::findOrdersForBasketId(types::IdType
   return orders;
 }
 
-tl::expected<types::Basket, types::Error> ClientStateSqlite::findBasket(types::IdType basketid) {
+tl::expected<types::Basket, types::Error>
+ClientStateSqlite::findBasket(types::IdType basketid) const {
   std::stringstream ss;
   ss << select_basket << client_schema << ".baskets WHERE "
      << " sid = " << basketid << ";";
@@ -254,7 +255,7 @@ tl::expected<types::Basket, types::Error> ClientStateSqlite::findBasket(types::I
   return {getBasketFromSql(query)};
 }
 
-tl::expected<types::Route, types::Error> ClientStateSqlite::findRoute(types::IdType routeid) {
+tl::expected<types::Route, types::Error> ClientStateSqlite::findRoute(types::IdType routeid) const {
   std::stringstream ss;
   ss << select_route << client_schema << ".routes WHERE "
      << " sid = " << routeid << ";";
@@ -267,7 +268,7 @@ tl::expected<types::Route, types::Error> ClientStateSqlite::findRoute(types::IdT
 }
 
 tl::expected<types::Route, types::Error>
-ClientStateSqlite::findRouteByClordId(types::FixClOrdIdType clordid) {
+ClientStateSqlite::findRouteByClordId(types::FixClOrdIdType clordid) const {
   std::stringstream ss;
   ss << select_route << client_schema << ".routes WHERE "
      << " clord_id = " << clordid << ";";
@@ -279,8 +280,9 @@ ClientStateSqlite::findRouteByClordId(types::FixClOrdIdType clordid) {
   return {getRouteFromSql(query)};
 }
 
-std::vector<types::Route> ClientStateSqlite::findRoutesForOrderId(types::IdType order_id,
-                                                                  types::RouteStatus status_match) {
+std::vector<types::Route>
+ClientStateSqlite::findRoutesForOrderId(types::IdType order_id,
+                                        types::RouteStatus status_match) const {
   std::stringstream ss;
   ss << select_route << client_schema << ".routes WHERE "
      << "order_id = " << order_id << " AND "
@@ -293,7 +295,7 @@ std::vector<types::Route> ClientStateSqlite::findRoutesForOrderId(types::IdType 
   return routes;
 }
 
-tl::expected<types::Fill, types::Error> ClientStateSqlite::findFill(types::IdType fill_id) {
+tl::expected<types::Fill, types::Error> ClientStateSqlite::findFill(types::IdType fill_id) const {
   std::stringstream ss;
   ss << select_fill << client_schema << ".fills WHERE "
      << " sid = " << fill_id << ";";
@@ -305,8 +307,9 @@ tl::expected<types::Fill, types::Error> ClientStateSqlite::findFill(types::IdTyp
   return {getFillFromSql(query)};
 }
 
-std::vector<types::Fill> ClientStateSqlite::findFillsForRouteId(types::IdType route_id,
-                                                                types::ExecStatus status_match) {
+std::vector<types::Fill>
+ClientStateSqlite::findFillsForRouteId(types::IdType route_id,
+                                       types::ExecStatus status_match) const {
   std::stringstream ss;
   ss << select_route << client_schema << ".fills WHERE "
      << "route_id = " << route_id << " AND "
@@ -319,8 +322,9 @@ std::vector<types::Fill> ClientStateSqlite::findFillsForRouteId(types::IdType ro
   return fills;
 }
 
-std::vector<types::Fill> ClientStateSqlite::findFillsForOrderId(types::IdType order_id,
-                                                                types::ExecStatus status_match) {
+std::vector<types::Fill>
+ClientStateSqlite::findFillsForOrderId(types::IdType order_id,
+                                       types::ExecStatus status_match) const {
   std::stringstream ss;
   ss << select_route << client_schema << ".fills WHERE "
      << "order_id = " << order_id << " AND "
