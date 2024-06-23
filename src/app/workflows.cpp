@@ -73,7 +73,7 @@ WorkFlow::Scope::Scope(model::Metrics &m) : m(m) { m.readCounter().start_watch()
 WorkFlow::Scope::~Scope() { m.readCounter().stop_watch(); }
 
 tl::expected<types::IdType, types::Error>
-WorkFlow::createOrder(const std::string &clord_id, std::optional<types::IdType> &basket_id) {
+WorkFlow::createOrder(std::string clord_id, std::optional<types::IdType>&& basket_id) {
   Scope s(metric_);
   types::Order order{.id = types::getNewOrderIdForClient(client_.client_id_),
                      .clord_id = types::getNewClordIdForClient(client_.client_id_),
@@ -84,8 +84,8 @@ WorkFlow::createOrder(const std::string &clord_id, std::optional<types::IdType> 
 }
 
 tl::expected<types::IdType, types::Error>
-WorkFlow::createChildOrder(const std::string &clord_id, const std::string &parent_clord_id,
-                           std::optional<types::IdType> &basket_id) {
+WorkFlow::createChildOrder(std::string clord_id, std::string&& parent_clord_id,
+                           std::optional<types::IdType>&& basket_id) {
   Scope s(metric_);
   return client_.state_->findOrderByClordId(parent_clord_id)
       .and_then([&](types::Order parent_order) -> tl::expected<types::IdType, types::Error> {
@@ -98,7 +98,7 @@ WorkFlow::createChildOrder(const std::string &clord_id, const std::string &paren
       });
 }
 
-tl::expected<types::IdType, types::Error> WorkFlow::createBasket(const std::string &basket_name) {
+tl::expected<types::IdType, types::Error> WorkFlow::createBasket(std::string&& basket_name) {
   Scope s(metric_);
   types::Basket basket{.id = types::getNewBasketIdForClient(client_.client_id_),
                        .name = basket_name,
@@ -106,8 +106,8 @@ tl::expected<types::IdType, types::Error> WorkFlow::createBasket(const std::stri
   return client_.state_->addBasket(std::move(basket));
 }
 
-tl::expected<types::IdType, types::Error> WorkFlow::routeOrder(const types::IdType order_id,
-                                                               const std::string &broker) {
+tl::expected<types::IdType, types::Error> WorkFlow::routeOrder(types::IdType order_id,
+                                                               std::string broker) {
   Scope s(metric_);
   types::Route route{.id = types::getNewRouteIdForClient(client_.client_id_),
                      .order_id = order_id,
@@ -118,7 +118,7 @@ tl::expected<types::IdType, types::Error> WorkFlow::routeOrder(const types::IdTy
   return client_.state_->addRouteForOrder(std::move(route), order_id);
 }
 
-tl::expected<void, types::Error> WorkFlow::ackRoute(const types::IdType route_id) {
+tl::expected<void, types::Error> WorkFlow::ackRoute(types::IdType route_id) {
   Scope s(metric_);
   return client_.state_->findRoute(route_id).and_then(
       [&](types::Route route) -> tl::expected<void, types::Error> {
@@ -129,7 +129,7 @@ tl::expected<void, types::Error> WorkFlow::ackRoute(const types::IdType route_id
 }
 
 tl::expected<types::IdType, types::Error>
-WorkFlow::createNewManualFillForRoute(const types::IdType route_id) {
+WorkFlow::createNewManualFillForRoute(types::IdType route_id) {
   Scope s(metric_);
   return client_.state_->findRoute(route_id).and_then(
       [&](types::Route route) -> tl::expected<types::IdType, types::Error> {
@@ -144,8 +144,8 @@ WorkFlow::createNewManualFillForRoute(const types::IdType route_id) {
 }
 
 tl::expected<types::IdType, types::Error>
-WorkFlow::addFillForRoute(const types::FixClOrdIdType &route_clordid,
-                          const types::FixClOrdIdType &exec_id) {
+WorkFlow::addFillForRoute(types::FixClOrdIdType&& route_clordid,
+                          types::FixClOrdIdType&& exec_id) {
   Scope s(metric_);
   return client_.state_->findRouteByClordId(route_clordid)
       .and_then([&](types::Route route) -> tl::expected<types::IdType, types::Error> {

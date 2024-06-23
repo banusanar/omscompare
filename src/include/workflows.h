@@ -16,25 +16,25 @@ public:
   WorkFlow(std::string wf_name, Client &client);
   ~WorkFlow();
 
-  tl::expected<types::IdType, types::Error> createOrder(const std::string &clord_id,
-                                                        std::optional<types::IdType> &basket_id);
+  tl::expected<types::IdType, types::Error> createOrder(std::string clord_id,
+                                                        std::optional<types::IdType>&& basket_id);
 
   tl::expected<types::IdType, types::Error>
-  createChildOrder(const std::string &clord_id, const std::string &parent_clord_id,
-                   std::optional<types::IdType> &basket_id);
+  createChildOrder(std::string clord_id, std::string&& parent_clord_id,
+                   std::optional<types::IdType>&& basket_id);
 
-  tl::expected<types::IdType, types::Error> createBasket(const std::string &basket_name);
+  tl::expected<types::IdType, types::Error> createBasket(std::string&& basket_name);
 
-  tl::expected<types::IdType, types::Error> routeOrder(const types::IdType order_id,
-                                                       const std::string &broker);
+  tl::expected<types::IdType, types::Error> routeOrder(types::IdType order_id,
+                                                       std::string broker);
 
-  tl::expected<void, types::Error> ackRoute(const types::IdType route_id);
-
-  tl::expected<types::IdType, types::Error>
-  createNewManualFillForRoute(const types::IdType route_id);
+  tl::expected<void, types::Error> ackRoute(types::IdType route_id);
 
   tl::expected<types::IdType, types::Error>
-  addFillForRoute(const types::FixClOrdIdType &route_clordid, const types::FixClOrdIdType &exec_id);
+  createNewManualFillForRoute(types::IdType route_id);
+
+  tl::expected<types::IdType, types::Error>
+  addFillForRoute(types::FixClOrdIdType&& route_clordid, types::FixClOrdIdType&& exec_id);
 
   std::shared_ptr<const model::ClientStateBase> clientRO() const { return client_.state_; }
 

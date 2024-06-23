@@ -43,7 +43,7 @@ struct WorkFlowWrap {
 
   bool run(int num_runs, std::string &run_option) {
     auto iter = run_functions.find(run_option);
-    if (iter != run_functions.end()) {
+    if (iter == run_functions.end()) {
       throw std::runtime_error("Run options not found");
     }
     return (this->*iter->second)(num_runs);
@@ -143,22 +143,19 @@ private:
   }
 
   tl::expected<void, types::Error> createOrder(types::IdType b) {
-    std::optional<types::IdType> basket_id{b};
-    return w->createOrder(order_clord_id, basket_id).and_then([&](auto o) {
+    return w->createOrder(order_clord_id, {b}).and_then([&](auto o) {
       return createRoute(o);
     });
   }
 
   tl::expected<void, types::Error> createOrderRouteFill(types::IdType b) {
-    std::optional<types::IdType> basket_id{b};
-    return w->createOrder(order_clord_id, basket_id).and_then([&](auto o) {
+    return w->createOrder(order_clord_id, {b}).and_then([&](auto o) {
       return createRouteAndFill(o);
     });
   }
 
   tl::expected<void, types::Error> createOrderRoutesAndFill(types::IdType b) {
-    std::optional<types::IdType> basket_id{b};
-    return w->createOrder(order_clord_id, basket_id).and_then([&](auto o) {
+    return w->createOrder(order_clord_id, {b}).and_then([&](auto o) {
       return createRoutesAndFill(o);
     });
   }
