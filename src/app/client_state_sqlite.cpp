@@ -69,7 +69,7 @@ types::Route getRouteFromSql(SQLite::Statement &query) {
   return std::move(r);
 }
 
-types::Fill &&getFillFromSql(SQLite::Statement &query) {
+types::Fill getFillFromSql(SQLite::Statement &query) {
   types::Fill r{
       .id = static_cast<types::IdType>(query.getColumn(0).getInt64()),
       .route_id = static_cast<types::IdType>(query.getColumn(3).getInt64()),

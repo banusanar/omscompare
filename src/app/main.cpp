@@ -25,16 +25,16 @@ const std::string run_options[] = {"order_route", "order_route_fill", "order_mul
 
 using namespace omscompare;
 struct WorkFlowWrap {
-  WorkFlowWrap(std::string container_type) : wfname(container_type) {
-    app::Client appc(1001);
+  WorkFlowWrap(std::string container_type)
+      : appc(std::make_shared<app::Client>(1001)), wfname(container_type) {
+
     if (container_type == "boost") {
-      appc.init(app::Client::BOOST);
+      appc->init(app::Client::BOOST);
     } else if (container_type == "sqlite") {
-      appc.init(app::Client::SQLite);
+      appc->init(app::Client::SQLite);
     } else {
       throw std::runtime_error("Invalid container type");
     }
-
     w = std::make_shared<app::WorkFlow>(wfname, appc);
     run_functions.emplace("order_route", &WorkFlowWrap::runOrderRoute);
     run_functions.emplace("order_route_fill", &WorkFlowWrap::runOrderRouteFill);
@@ -96,6 +96,7 @@ struct WorkFlowWrap {
   typedef bool (WorkFlowWrap::*run_function_type)(int);
 
 private:
+  std::shared_ptr<app::Client> appc;
   std::shared_ptr<app::WorkFlow> w;
   std::string wfname;
   std::string broker;
@@ -143,9 +144,7 @@ private:
   }
 
   tl::expected<void, types::Error> createOrder(types::IdType b) {
-    return w->createOrder(order_clord_id, {b}).and_then([&](auto o) {
-      return createRoute(o);
-    });
+    return w->createOrder(order_clord_id, {b}).and_then([&](auto o) { return createRoute(o); });
   }
 
   tl::expected<void, types::Error> createOrderRouteFill(types::IdType b) {

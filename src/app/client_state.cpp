@@ -15,9 +15,7 @@ const int BENCHMARK_SIZE = 100000;
 using Error = types::Error;
 using namespace containers;
 
-ClientState::ClientState() : baskets_(), orders_(), routes_(), fills_() {
-  std::cout << "Calling the constructor for client state boost" << std::endl;
-}
+ClientState::ClientState() : baskets_(), orders_(), routes_(), fills_() {}
 
 //   // metrics_.emplace("basket", Metrics{});
 //   // metrics_.emplace("order", Metrics{});

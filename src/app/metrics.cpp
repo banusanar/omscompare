@@ -11,14 +11,12 @@ void Counter::stop_watch() {
                           .count();
   total_time_since_count += time_for_run;
   count++;
-  if (average_time_per_instance == 0) {
-    average_time_per_instance = time_for_run;
-  } else { // https://en.wikipedia.org/wiki/Moving_average#Cumulative_average
-    average_time_per_instance =
-        average_time_per_instance + ((time_for_run - average_time_per_instance) / count);
-  }
-  if (time_for_run > average_time_per_instance * 0.05) {
+  // https://en.wikipedia.org/wiki/Moving_average#Cumulative_average
+  const auto prev = average_time_per_instance;
+  average_time_per_instance = prev + ((time_for_run - prev) / count);
+  if (time_for_run > average_time_per_instance * 2) { // twice the existing avg
     events_above_average++;
+    std::cerr << "prev avg " << prev << " vs curr run " << time_for_run << std::endl;
   }
 }
 
