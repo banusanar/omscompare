@@ -41,7 +41,13 @@ struct WorkFlowWrap {
     run_functions.emplace("order_multi_route_fill", &WorkFlowWrap::runOrderMultiRouteFill);
   }
 
-  bool run(int num_runs, std::string &run_option) { return run_functions[run_option](num_runs); }
+  bool run(int num_runs, std::string &run_option) {
+    auto iter = run_functions.find(run_option);
+    if (iter != run_functions.end()) {
+      throw std::runtime_error("Run options not found");
+    }
+    return (this->*iter->second)(num_runs);
+  }
 
   bool runOrderRoute(int num_runs) {
     for (int idx = 0; idx < num_runs; idx++) {
@@ -87,12 +93,15 @@ struct WorkFlowWrap {
     return true;
   }
 
+  typedef bool (WorkFlowWrap::*run_function_type)(int);
+
 private:
   std::shared_ptr<app::WorkFlow> w;
   std::string wfname;
   std::string broker;
   std::string order_clord_id;
-  std::map<std::string, std::function<bool(int)>> run_functions;
+
+  std::map<std::string, run_function_type> run_functions;
 
   tl::expected<void, types::Error> createRoute(types::IdType o) {
     return w->routeOrder(o, broker).and_then(
