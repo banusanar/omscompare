@@ -30,17 +30,22 @@ void generateRandomObj(std::byte *data, int size) {
 
 auto print_stats = [](const model::Counter &lhs, std::string oper) {
   if (lhs.getCount() > 0) {
-    std::cout << lhs.getCount() << " operations took " << std::setprecision(6)
-              << std::ios_base::fixed;
+    std::cout << lhs.getCount() << " operations took ";
     if (lhs.getTimeTaken() < 100000) {
       std::cout << lhs.getTimeTaken() << " msecs." << std::endl;
     } else {
       std::cout << lhs.getTimeTaken() / 100000 << " secs." << std::endl;
     }
-    std::cout << "Each operation took an avg of " << std::setprecision(6) << std::ios_base::fixed
-              << lhs.getAverageTimeTaken() << " msecs." << std::endl;
-    std::cout << lhs.getEventsAboveAverage() << " events took twice the previous average time"
-              << std::endl;
+    std::cout << (lhs.getCount() - lhs.getBadEventsAboveAverage() -
+                  lhs.getWorseEventsAboveAverage())
+              << " operation took an avg of " << lhs.getAverageTimeTaken() << " msecs." << std::endl
+              << lhs.getBadEventsAboveAverage()
+              << " events took more than 2 times average. Bad Average time "
+              << lhs.getBadTimeTaken() << " msecs." << std::endl
+              << lhs.getWorseEventsAboveAverage()
+              << " events took more than 10 times average. Worst Average time "
+              << lhs.getWorstTimeTaken() << " msecs." << std::endl
+              << lhs.getWorstTime() << " was the max time for any event in this run" << std::endl;
   }
 };
 
@@ -147,7 +152,7 @@ WorkFlow::createNewManualFillForRoute(types::IdType route_id) {
 }
 
 tl::expected<types::IdType, types::Error>
-WorkFlow::addFillForRoute(types::FixClOrdIdType &&route_clordid, types::FixClOrdIdType &&exec_id) {
+WorkFlow::addFillForRoute(types::FixClOrdIdType route_clordid, types::FixClOrdIdType &&exec_id) {
   Scope s(metric_);
   return client_->state_->findRouteByClordId(route_clordid)
       .and_then([&](types::Route route) -> tl::expected<types::IdType, types::Error> {

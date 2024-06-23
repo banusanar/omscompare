@@ -20,13 +20,16 @@ namespace {
 
 const char *container_opts[] = {"b", "s"};
 const std::string container_types[] = {"boost", "sqlite"};
-const char *run_opts[] = {"r", "f", "m"};
-const std::string run_options[] = {"order_route", "order_route_fill", "order_multi_route_fill"};
+const char *run_opts[] = {"o", "r", "m", "f"};
+const std::string run_options[] = {"order_route", "order_route_fill", "order_multi_route_fill",
+                                   "order_multi_route_multi_fill"};
+const int RUN_SIZE = 256;
 
 using namespace omscompare;
 struct WorkFlowWrap {
-  WorkFlowWrap(std::string container_type)
-      : appc(std::make_shared<app::Client>(1001)), wfname(container_type) {
+  WorkFlowWrap(std::string container_type, int inner_loop_count)
+      : appc(std::make_shared<app::Client>(1001)), wfname(container_type),
+        inner_loop_size(inner_loop_count) {
 
     if (container_type == "boost") {
       appc->init(app::Client::BOOST);
@@ -39,6 +42,8 @@ struct WorkFlowWrap {
     run_functions.emplace("order_route", &WorkFlowWrap::runOrderRoute);
     run_functions.emplace("order_route_fill", &WorkFlowWrap::runOrderRouteFill);
     run_functions.emplace("order_multi_route_fill", &WorkFlowWrap::runOrderMultiRouteFill);
+    run_functions.emplace("order_multi_route_multi_fill",
+                          &WorkFlowWrap::runOrderMultiRouteMultiFill);
   }
 
   bool run(int num_runs, std::string &run_option) {
@@ -93,6 +98,21 @@ struct WorkFlowWrap {
     return true;
   }
 
+  bool runOrderMultiRouteMultiFill(int num_runs) {
+    for (int idx = 0; idx < num_runs; idx++) {
+      broker = wfname + "_broker_" + std::to_string(idx);
+      order_clord_id = wfname + "_order_" + std::to_string(idx);
+      auto res = w->createBasket(std::to_string(idx)).and_then([&](auto b) {
+        return createOrderRoutesAndMultiFills(b);
+      });
+      if (!res.has_value()) {
+        std::cerr << "Found error in " << idx << " run [" << res.error().what << "]" << std::endl;
+        return false;
+      }
+    }
+    return true;
+  }
+
   typedef bool (WorkFlowWrap::*run_function_type)(int);
 
 private:
@@ -101,6 +121,7 @@ private:
   std::string wfname;
   std::string broker;
   std::string order_clord_id;
+  int inner_loop_size{0};
 
   std::map<std::string, run_function_type> run_functions;
 
@@ -123,7 +144,7 @@ private:
   }
 
   tl::expected<void, types::Error> createRoutesAndFill(types::IdType o) {
-    for (int jdx = 0; jdx < types::DATA_SIZE; jdx++) {
+    for (int jdx = 0; jdx < inner_loop_size; jdx++) {
       std::string fill_broker = broker + "_" + std::to_string(jdx);
       auto result =
           w->routeOrder(o, fill_broker)
@@ -143,6 +164,36 @@ private:
     return {};
   }
 
+  tl::expected<void, types::Error> createRoutesAndFills(types::IdType o) {
+    for (int jdx = 0; jdx < inner_loop_size; jdx++) {
+      std::string fill_broker = broker + "_" + std::to_string(jdx);
+      auto result =
+          w->routeOrder(o, fill_broker)
+              .and_then([&](types::IdType r) -> tl::expected<void, types::Error> {
+                return w->ackRoute(r).and_then(
+                    [&](void) -> tl::expected<void, types::Error> { return createFills(r); });
+              });
+      if (!result.has_value()) {
+        return tl::make_unexpected(result.error());
+      }
+    }
+    return {};
+  }
+
+  tl::expected<void, types::Error> createFills(types::IdType route_id) {
+    return w->clientRO()->findRoute(route_id).and_then(
+        [&](types::Route route) -> tl::expected<void, types::Error> {
+          for (int zdx = 0; zdx < inner_loop_size; zdx++) {
+            auto y =
+                w->addFillForRoute(route.clord_id, route.broker + "fill_" + std::to_string(zdx));
+            if (!y.has_value()) {
+              return tl::make_unexpected(y.error());
+            }
+          }
+          return {};
+        });
+  }
+
   tl::expected<void, types::Error> createOrder(types::IdType b) {
     return w->createOrder(order_clord_id, {b}).and_then([&](auto o) { return createRoute(o); });
   }
@@ -156,6 +207,12 @@ private:
   tl::expected<void, types::Error> createOrderRoutesAndFill(types::IdType b) {
     return w->createOrder(order_clord_id, {b}).and_then([&](auto o) {
       return createRoutesAndFill(o);
+    });
+  }
+
+  tl::expected<void, types::Error> createOrderRoutesAndMultiFills(types::IdType b) {
+    return w->createOrder(order_clord_id, {b}).and_then([&](auto o) {
+      return createRoutesAndFills(o);
     });
   }
 };
@@ -180,7 +237,12 @@ int main(int argc, char **argv) {
         .help("Number of runs per workflow")
         .scan<'i', int>();
 
-    for (int idx = 0; idx < 3; idx++) {
+    program.add_argument("-i", "--inner_count")
+        .default_value(RUN_SIZE)
+        .help("Number of routes or fills per each iteration per workflow")
+        .scan<'i', int>();
+
+    for (int idx = 0; idx < 4; idx++) {
       std::string sopt = "-";
       sopt.append(run_opts[idx]);
       std::string bigopt = "--";
@@ -191,6 +253,8 @@ int main(int argc, char **argv) {
 
     program.parse_args(argc, argv);
     num_runs = program.get<int>("count");
+
+    auto loop_count = program.get<int>("inner_count");
 
     if (program["boost"] == false && program["sqlite"] == false) {
       std::cout << "Both Boost and Sqlite cannot be turned off for storage" << std::endl;
@@ -209,7 +273,7 @@ int main(int argc, char **argv) {
         for (auto st : container_types) {
           if (program[st] == true) {
             std::cout << "\tStart run for \'" << st << "\' container storage type" << std::endl;
-            WorkFlowWrap wp(st);
+            WorkFlowWrap wp(st, loop_count);
             wp.run(num_runs, ropt);
           }
         }

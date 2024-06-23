@@ -32,7 +32,7 @@ public:
 
   tl::expected<types::IdType, types::Error> createNewManualFillForRoute(types::IdType route_id);
 
-  tl::expected<types::IdType, types::Error> addFillForRoute(types::FixClOrdIdType &&route_clordid,
+  tl::expected<types::IdType, types::Error> addFillForRoute(types::FixClOrdIdType route_clordid,
                                                             types::FixClOrdIdType &&exec_id);
 
   std::shared_ptr<const model::ClientStateBase> clientRO() const { return client_->state_; }
