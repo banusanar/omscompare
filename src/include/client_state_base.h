@@ -12,10 +12,13 @@
 namespace omscompare {
 namespace model {
 
+class StateStatistics;
+
 class ClientStateBase {
 public:
   ClientStateBase() = default;
   virtual ~ClientStateBase(){};
+  virtual StateStatistics counts() const = 0;
   virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const = 0;
   virtual tl::expected<types::Order, types::Error>
   findOrderByClordId(types::FixClOrdIdType clordid) const = 0;

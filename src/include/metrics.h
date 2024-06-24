@@ -14,17 +14,34 @@
 namespace omscompare {
 namespace model {
 
-struct Unit {
-  uint64_t count{0};
-  double timetaken{0.0};
+struct StateStatistics {
+  uint64_t baskets;
+  uint64_t orders;
+  uint64_t routes;
+  uint64_t fills;
 };
+
+std::ostream &operator<<(std::ostream &os, const StateStatistics &lhs);
 
 class Counter {
 public:
-  Counter() : count(0), total_time_since_count(0.0), begin_start_of_operation() {}
+  Counter() : begin_start_of_operation() {}
 
   void start_watch();
-  void stop_watch();
+  double stop_watch();
+
+private:
+  std::chrono::steady_clock::time_point begin_start_of_operation;
+};
+
+class Metrics {
+public:
+  Metrics() {}
+
+  Counter &counter() { return counter_; }
+  // Counter &writeCounter() { return wo_counter_; }
+
+  void accum(double time_taken, const StateStatistics &, const std::string &);
 
   constexpr uint64_t getCount() const { return count; }
   constexpr double getTimeTaken() const { return total_time_since_count; }
@@ -36,6 +53,7 @@ public:
   constexpr uint64_t getWorseEventsAboveAverage() const { return worst_events_above_average; }
 
 private:
+  Counter counter_;
   uint64_t count{0};
   uint64_t events_above_average{0};
   uint64_t worst_events_above_average{0};
@@ -44,19 +62,7 @@ private:
   double average_time{0.0};
   double bad_avg_time{0.0};
   double worst_avg_time{0.0};
-  std::chrono::steady_clock::time_point begin_start_of_operation;
-};
-
-class Metrics {
-public:
-  Metrics() {}
-
-  Counter &readCounter() { return ro_counter_; }
-  Counter &writeCounter() { return wo_counter_; }
-
-private:
-  Counter ro_counter_;
-  Counter wo_counter_;
+  // Counter wo_counter_;
 };
 
 } // namespace model

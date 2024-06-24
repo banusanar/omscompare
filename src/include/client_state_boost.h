@@ -15,7 +15,8 @@ namespace model {
 class ClientState : public ClientStateBase {
 public:
   ClientState();
-
+  ~ClientState();
+  virtual StateStatistics counts() const override;
   virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const override;
   virtual tl::expected<types::Order, types::Error>
   findOrderByClordId(types::FixClOrdIdType clordid) const override;

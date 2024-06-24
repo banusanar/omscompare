@@ -38,10 +38,12 @@ public:
   std::shared_ptr<const model::ClientStateBase> clientRO() const { return client_->state_; }
 
   struct Scope {
-    Scope(model::Metrics &m);
+    Scope(model::Metrics &m, model::StateStatistics, std::string);
     ~Scope();
 
     model::Metrics &m;
+    model::StateStatistics state;
+    std::string funcname;
   };
 
 private:

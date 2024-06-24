@@ -1,6 +1,6 @@
 #include "client.h"
 #include "client_state_base.h"
-#include <client_state.h>
+#include <client_state_boost.h>
 
 namespace omscompare {
 namespace app {

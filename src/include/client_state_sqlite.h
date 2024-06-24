@@ -16,7 +16,8 @@ namespace model {
 class ClientStateSqlite : public ClientStateBase {
 public:
   ClientStateSqlite(types::ClientIdType client_id);
-
+  ~ClientStateSqlite();
+  virtual StateStatistics counts() const override;
   virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const override;
   virtual tl::expected<types::Order, types::Error>
   findOrderByClordId(types::FixClOrdIdType clordid) const override;

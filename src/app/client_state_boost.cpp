@@ -2,6 +2,7 @@
 #include <bits/ranges_base.h>
 #include <client_state_boost.h>
 #include <fill.h>
+#include <iomanip>
 #include <metrics.h>
 #include <order.h>
 #include <route.h>
@@ -17,6 +18,19 @@ using namespace containers;
 
 ClientState::ClientState() : baskets_(), orders_(), routes_(), fills_() {}
 
+ClientState::~ClientState() {
+  std::cerr << std::setprecision(6) << "Created Orders  [" << orders_.size() << "]" << std::endl
+            << "        Baskets [" << baskets_.size() << "]" << std::endl
+            << "        Routes  [" << routes_.size() << "]" << std::endl
+            << "        Fills   [" << fills_.size() << "]" << std::endl;
+}
+
+StateStatistics ClientState::counts() const {
+  return StateStatistics{.baskets = baskets_.size(),
+                         .orders = orders_.size(),
+                         .routes = routes_.size(),
+                         .fills = fills_.size()};
+}
 //   // metrics_.emplace("basket", Metrics{});
 //   // metrics_.emplace("order", Metrics{});
 //   // metrics_.emplace("route", Metrics{});
@@ -158,9 +172,9 @@ tl::expected<types::IdType, types::Error> ClientState::addBasket(types::Basket &
   auto [iter, result] = baskets_.insert(basket);
   if (!result)
     return tl::make_unexpected(Error{.what = "Basket insert failed"});
-  if ((baskets_.size() % BENCHMARK_SIZE) == 0) {
-    std::cerr << "Baskets at " << baskets_.size() << std::endl;
-  }
+  // if ((baskets_.size() % BENCHMARK_SIZE) == 0) {
+  //   std::cerr << "Baskets at " << baskets_.size() << std::endl;
+  // }
   return {iter->id};
 }
 
@@ -169,9 +183,9 @@ tl::expected<types::IdType, Error> ClientState::addOrder(types::Order &&order) {
   if (!result)
     return tl::make_unexpected(Error{.what = "Order insert failed"});
 
-  if ((orders_.size() % BENCHMARK_SIZE) == 0) {
-    std::cerr << "orders_ at " << orders_.size() << std::endl;
-  }
+  // if ((orders_.size() % BENCHMARK_SIZE) == 0) {
+  //   std::cerr << "orders_ at " << orders_.size() << std::endl;
+  // }
   return {iter->id};
 }
 
@@ -181,9 +195,9 @@ tl::expected<types::IdType, Error> ClientState::addRouteForOrder(types::Route &&
     auto [iter, result] = routes_.insert(route);
     if (!result)
       return tl::make_unexpected(Error{.what = "Found Order. Route insert failed"});
-    if ((routes_.size() % BENCHMARK_SIZE) == 0) {
-      std::cerr << "routes_ at " << routes_.size() << std::endl;
-    }
+    // if ((routes_.size() % BENCHMARK_SIZE) == 0) {
+    //   std::cerr << "routes_ at " << routes_.size() << std::endl;
+    // }
     return {iter->id};
   });
 }
@@ -194,9 +208,9 @@ tl::expected<types::IdType, Error> ClientState::addOrderForBasket(types::Order &
     auto [iter, result] = orders_.insert(order);
     if (!result)
       return tl::make_unexpected(Error{.what = "Found Basket. Order insert failed"});
-    if ((orders_.size() % BENCHMARK_SIZE) == 0) {
-      std::cerr << "orders_ at " << orders_.size() << std::endl;
-    }
+    // if ((orders_.size() % BENCHMARK_SIZE) == 0) {
+    //   std::cerr << "orders_ at " << orders_.size() << std::endl;
+    // }
     return {iter->id};
   });
 }
@@ -207,9 +221,9 @@ tl::expected<types::IdType, Error> ClientState::addFillForRoute(types::Fill &&fi
     auto [iter, result] = fills_.insert(fill);
     if (!result)
       return tl::make_unexpected(Error{.what = "Found Route. Fill insert failed"});
-    if ((fills_.size() % BENCHMARK_SIZE) == 0) {
-      std::cerr << "fills_ at " << fills_.size() << std::endl;
-    }
+    // if ((fills_.size() % BENCHMARK_SIZE) == 0) {
+    //   std::cerr << "fills_ at " << fills_.size() << std::endl;
+    // }
     return {iter->id};
   });
 }
