@@ -11,8 +11,7 @@ target_sources(omslib PRIVATE
     workflows.cpp
 )
 
-#target_include_directories(omslib PUBLIC .)
+target_include_directories(omslib PUBLIC ${CMAKE_SOURCE_DIR}/src/include)
 
 target_link_libraries(omscompare PUBLIC omslib Boost::boost)
 target_link_libraries(omscompare PUBLIC SQLiteCpp)
-target_include_directories(omslib PUBLIC ${CMAKE_SOURCE_DIR}/src/include)

@@ -16,7 +16,7 @@ namespace model {
 class ClientStateSqlite : public ClientStateBase {
 public:
   ClientStateSqlite(types::ClientIdType client_id);
-  ~ClientStateSqlite(){}
+  ~ClientStateSqlite() {}
   virtual StateStatistics counts() const override;
   virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const override;
   virtual tl::expected<types::Order, types::Error>
@@ -57,11 +57,11 @@ public:
   // virtual tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id) override;
 
 private:
+  std::string client_schema;
   std::shared_ptr<SQLite::Database> dbh;
 
-  void createTableSql(const std::string &sql); // throws instead of returning error
-  tl::expected<void, types::Error> updateSql(SQLite::Statement &query);
-  std::string client_schema;
+  void ddlSql(const std::string &sql); // throws instead of returning error
+  tl::expected<void, types::Error> dmlSql(SQLite::Statement &query);
 };
 
 } // namespace model
