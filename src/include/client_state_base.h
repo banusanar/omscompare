@@ -16,7 +16,7 @@ class StateStatistics;
 
 class ClientStateBase {
 public:
-  ClientStateBase() = default;
+  ClientStateBase(types::ClientIdType) {}
   virtual ~ClientStateBase(){};
   virtual StateStatistics counts() const = 0;
   virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const = 0;

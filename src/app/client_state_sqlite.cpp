@@ -1,4 +1,5 @@
 #include "client_state_base.h"
+#include "metrics.h"
 #include "types/error.h"
 #include "types/fill.h"
 #include "types/order.h"
@@ -109,7 +110,8 @@ tl::expected<void, types::Error> ClientStateSqlite::updateSql(SQLite::Statement 
 }
 
 ClientStateSqlite::ClientStateSqlite(types::ClientIdType client_id)
-    : dbh(std::make_shared<SQLite::Database>(":memory:",
+    : ClientStateBase(client_id)
+    , dbh(std::make_shared<SQLite::Database>(":memory:",
                                              SQLite::OPEN_MEMORY | SQLite::OPEN_NOMUTEX)),
       client_schema(std::to_string(client_id)) {
   // Create the tables before we can start the process for this client.
@@ -203,6 +205,11 @@ ClientStateSqlite::ClientStateSqlite(types::ClientIdType client_id)
 
     db_exec(ss.str());
   }
+}
+
+StateStatistics ClientStateSqlite::counts() const {
+  //TODO
+  return StateStatistics{0,0,0,0};
 }
 
 tl::expected<types::Order, types::Error> ClientStateSqlite::findOrder(types::IdType orderid) const {

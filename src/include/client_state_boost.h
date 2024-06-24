@@ -1,6 +1,7 @@
-#ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
-#define OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
+#ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_BOOST_H_
+#define OMSCOMPARE_OMSMODEL_CLIENT_STATE_BOOST_H_
 
+#include "types/idtype.h"
 #include <basket.h>
 #include <client_state_base.h>
 #include <fill.h>
@@ -14,7 +15,7 @@ namespace model {
 
 class ClientState : public ClientStateBase {
 public:
-  ClientState();
+  ClientState(types::ClientIdType);
   ~ClientState();
   virtual StateStatistics counts() const override;
   virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const override;

@@ -1,3 +1,4 @@
+#include "client_state_base.h"
 #include <basket.h>
 #include <bits/ranges_base.h>
 #include <client_state_boost.h>
@@ -16,7 +17,7 @@ const int BENCHMARK_SIZE = 100000;
 using Error = types::Error;
 using namespace containers;
 
-ClientState::ClientState() : baskets_(), orders_(), routes_(), fills_() {}
+ClientState::ClientState(types::ClientIdType c) : ClientStateBase(c), baskets_(), orders_(), routes_(), fills_() {}
 
 ClientState::~ClientState() {
   std::cerr << std::setprecision(6) << "Created Orders  [" << orders_.size() << "]" << std::endl
