@@ -120,12 +120,7 @@ ClientStateSqlite::ClientStateSqlite(types::ClientIdType client_id)
 
 StateStatistics ClientStateSqlite::counts() const {
   // TODO
-  return StateStatistics{.bad_multiplier = 2.0,
-                         .worse_multiplier = 5.0,
-                         .baskets = 0,
-                         .orders = 0,
-                         .routes = 0,
-                         .fills = 0};
+  return StateStatistics{0, 0, 0, 0};
 }
 
 tl::expected<types::Order, types::Error> ClientStateSqlite::findOrder(types::IdType orderid) const {

@@ -1,4 +1,5 @@
 #include "workflows.h"
+#include "client.h"
 #include "metrics.h"
 #include <algorithm>
 #include <basket.h>
@@ -28,26 +29,6 @@ void generateRandomObj(std::byte *data, int size) {
   std::generate_n(data, size, [rbe]() mutable { return std::byte(rbe()); });
 }
 
-auto print_stats = [](const model::Metrics &lhs) {
-  if (lhs.getCount() > 0) {
-    std::cout << lhs.getCount() << " operations took ";
-    if (lhs.getTimeTaken() < 100000) {
-      std::cout << lhs.getTimeTaken() << " msecs." << std::endl;
-    } else {
-      std::cout << lhs.getTimeTaken() / 100000 << " secs." << std::endl;
-    }
-    std::cout << (lhs.getCount() - lhs.getBadEventsAboveAverage() -
-                  lhs.getWorseEventsAboveAverage())
-              << " operation took an avg of " << lhs.getAverageTimeTaken() << " msecs." << std::endl
-              << lhs.getBadEventsAboveAverage() << " events took >5x avg. Bad Average time "
-              << lhs.getBadTimeTaken() << " msecs." << std::endl
-              << lhs.getWorseEventsAboveAverage()
-              << " events took either >40 msec or >20x avg. Worst Average time "
-              << lhs.getWorstTimeTaken() << " msecs." << std::endl
-              << lhs.getWorstTime() << " was the max time for any event in this run" << std::endl;
-  }
-};
-
 } // namespace
 
 WorkFlow::WorkFlow(std::string wf_name, std::shared_ptr<Client> client)
@@ -57,7 +38,27 @@ WorkFlow::WorkFlow(std::string wf_name, std::shared_ptr<Client> client)
   }
 }
 
-WorkFlow::~WorkFlow() { print_stats(metric_); }
+WorkFlow::~WorkFlow() {
+  if (metric_.getCount() == 0) {
+    return;
+  }
+
+  std::cout << metric_.getCount() << " operations took ";
+  if (metric_.getTimeTaken() < 100000) {
+    std::cout << metric_.getTimeTaken() << " msecs." << std::endl;
+  } else {
+    std::cout << metric_.getTimeTaken() / 100000 << " secs." << std::endl;
+  }
+
+  for (int idx = model::Bucket::MSECS_0_TO_10; idx < model::Bucket::MAX_BUCKET_VALUES; idx++) {
+    if (metric_.bucketCounts()[idx] == 0) {
+      continue;
+    }
+    std::cout << metric_.bucketCounts()[idx] << " operations took an avg of "
+              << metric_.bucketAverages()[idx] << " msecs" << std::endl;
+  }
+  std::cerr << metric_.getWorstTime() << " was the max time for any event in this run" << std::endl;
+}
 
 WorkFlow::Scope::Scope(model::Metrics &m, model::StateStatistics state, std::string funcname)
     : m(m), state(state), funcname(funcname) {

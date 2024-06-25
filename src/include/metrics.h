@@ -1,12 +1,15 @@
 #ifndef OMSCOMPARE_MODEL_METRICS_H_
 #define OMSCOMPARE_MODEL_METRICS_H_
 
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include <list>
 #include <map>
+#include <numeric>
 #include <optional>
 #include <string>
 #include <vector>
@@ -15,13 +18,22 @@ namespace omscompare {
 namespace model {
 
 struct StateStatistics {
-  double bad_multiplier{5.0};
-  double worse_multiplier{20.0};
   uint64_t baskets;
   uint64_t orders;
   uint64_t routes;
   uint64_t fills;
 };
+
+enum Bucket : int {
+  MSECS_0_TO_10 = 0,
+  MSECS_10_TO_20,
+  MSECS_20_TO_40,
+  MSECS_40_TO_100,
+  MSECS_100_TO_200,
+  MSECS_ABOVE_200,
+  MAX_BUCKET_VALUES // some huge number
+};
+const int start_buckets_compare[] = {0, 10, 20, 40, 100, 200, std::numeric_limits<int>::max()};
 
 std::ostream &operator<<(std::ostream &os, const StateStatistics &lhs);
 
@@ -45,25 +57,24 @@ public:
 
   void accum(double time_taken, const StateStatistics &, const std::string &);
 
-  constexpr uint64_t getCount() const { return count; }
+  constexpr uint64_t getCount() const {
+    return std::accumulate(counts_per_bucket_.begin(), counts_per_bucket_.end(), 0);
+  }
   constexpr double getTimeTaken() const { return total_time_since_count; }
-  constexpr double getAverageTimeTaken() const { return average_time; }
-  constexpr double getBadTimeTaken() const { return bad_avg_time; }
-  constexpr double getWorstTimeTaken() const { return worst_avg_time; }
   constexpr double getWorstTime() const { return worst_time; }
-  constexpr uint64_t getBadEventsAboveAverage() const { return events_above_average; }
-  constexpr uint64_t getWorseEventsAboveAverage() const { return worst_events_above_average; }
+  constexpr std::array<int, Bucket::MAX_BUCKET_VALUES> bucketCounts() const {
+    return counts_per_bucket_;
+  }
+  constexpr std::array<double, Bucket::MAX_BUCKET_VALUES> bucketAverages() const {
+    return average_per_bucket_;
+  }
 
 private:
   Counter counter_;
-  uint64_t count{0};
-  uint64_t events_above_average{0};
-  uint64_t worst_events_above_average{0};
+  std::array<int, Bucket::MAX_BUCKET_VALUES> counts_per_bucket_{};
+  std::array<double, Bucket::MAX_BUCKET_VALUES> average_per_bucket_{};
   double total_time_since_count{0.0};
   double worst_time{0.0};
-  double average_time{0.0};
-  double bad_avg_time{0.0};
-  double worst_avg_time{0.0};
   // Counter wo_counter_;
 };
 

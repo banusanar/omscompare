@@ -17,7 +17,7 @@ class WorkFlow;
 
 class Client {
 public:
-  enum ContainerType { BOOST = 0, SQLite = 1 };
+  enum ContainerType { BOOST = 0, SQLite = 1, UNKNOWN = 99 };
 
   explicit Client(types::ClientIdType clientid)
       : client_id_(clientid), is_ready_(false), state_lock_(), state_() {}
@@ -37,6 +37,7 @@ public:
 
 private:
   types::ClientIdType client_id_;
+  ContainerType client_type_{UNKNOWN};
   bool is_ready_;
   std::mutex state_lock_;
   std::shared_ptr<model::ClientStateBase> state_;

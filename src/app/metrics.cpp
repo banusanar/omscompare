@@ -21,21 +21,13 @@ double Counter::stop_watch() {
 void Metrics::accum(double time_for_run, const StateStatistics &state,
                     const std::string &funcname) {
   total_time_since_count += time_for_run;
-  count++;
-  // https://en.wikipedia.org/wiki/Moving_average#Cumulative_average
-  const auto prev = average_time;
-  average_time = prev + ((time_for_run - prev) / count);
-  if (time_for_run > average_time * state.bad_multiplier) { // 5 times the existing avg
-    if (time_for_run > std::max(average_time * state.worse_multiplier, 40.0)) {
-      worst_events_above_average++;
-      const auto prev_worst = worst_avg_time;
-      worst_avg_time = prev_worst + ((time_for_run - prev_worst) / worst_events_above_average);
-    } else {
-      events_above_average++;
-      const auto prev_bad = bad_avg_time;
-      bad_avg_time = prev_bad + ((time_for_run - prev_bad) / events_above_average);
+  for (int bidx = Bucket::MSECS_0_TO_10; bidx < Bucket::MAX_BUCKET_VALUES; bidx++) {
+    if (time_for_run > start_buckets_compare[bidx] &&
+        time_for_run < start_buckets_compare[bidx + 1]) {
+      counts_per_bucket_[bidx]++;
+      auto prev = average_per_bucket_[bidx];
+      average_per_bucket_[bidx] = prev + ((time_for_run - prev) / counts_per_bucket_[bidx]);
     }
-    average_time = prev; // reverse the average time
   }
   worst_time = std::max(double(time_for_run), worst_time);
   // std::cerr << state << " time: " << time_for_run << " msecs for " << funcname << std::endl;

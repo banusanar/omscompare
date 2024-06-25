@@ -1,5 +1,5 @@
-#include <client_state_sqlite.h>
 #include <SQLiteCpp/Statement.h>
+#include <client_state_sqlite.h>
 #include <memory>
 #include <sstream>
 
