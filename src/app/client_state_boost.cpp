@@ -21,10 +21,10 @@ ClientState::ClientState(types::ClientIdType c)
     : ClientStateBase(c), baskets_(), orders_(), routes_(), fills_() {}
 
 ClientState::~ClientState() {
-  std::cerr << std::setprecision(6) << "Created Orders  [" << orders_.size() << "]" << std::endl
-            << "        Baskets [" << baskets_.size() << "]" << std::endl
-            << "        Routes  [" << routes_.size() << "]" << std::endl
-            << "        Fills   [" << fills_.size() << "]" << std::endl;
+  // std::cerr << std::setprecision(6) << "Created Orders  [" << orders_.size() << "]" << std::endl
+  //           << "        Baskets [" << baskets_.size() << "]" << std::endl
+  //           << "        Routes  [" << routes_.size() << "]" << std::endl
+  //          << "        Fills   [" << fills_.size() << "]" << std::endl;
 }
 
 StateStatistics ClientState::counts() const {
