@@ -1,8 +1,9 @@
 #include "workflows.h"
+#include "client.h"
 #include "metrics.h"
 #include <algorithm>
 #include <basket.h>
-#include <client_state.h>
+#include <client_state_boost.h>
 #include <climits>
 #include <fill.h>
 #include <functional>
@@ -28,27 +29,6 @@ void generateRandomObj(std::byte *data, int size) {
   std::generate_n(data, size, [rbe]() mutable { return std::byte(rbe()); });
 }
 
-auto print_stats = [](const model::Counter &lhs, std::string oper) {
-  if (lhs.getCount() > 0) {
-    std::cout << lhs.getCount() << " operations took ";
-    if (lhs.getTimeTaken() < 100000) {
-      std::cout << lhs.getTimeTaken() << " msecs." << std::endl;
-    } else {
-      std::cout << lhs.getTimeTaken() / 100000 << " secs." << std::endl;
-    }
-    std::cout << (lhs.getCount() - lhs.getBadEventsAboveAverage() -
-                  lhs.getWorseEventsAboveAverage())
-              << " operation took an avg of " << lhs.getAverageTimeTaken() << " msecs." << std::endl
-              << lhs.getBadEventsAboveAverage()
-              << " events took more than 2 times average. Bad Average time "
-              << lhs.getBadTimeTaken() << " msecs." << std::endl
-              << lhs.getWorseEventsAboveAverage()
-              << " events took more than 10 times average. Worst Average time "
-              << lhs.getWorstTimeTaken() << " msecs." << std::endl
-              << lhs.getWorstTime() << " was the max time for any event in this run" << std::endl;
-  }
-};
-
 } // namespace
 
 WorkFlow::WorkFlow(std::string wf_name, std::shared_ptr<Client> client)
@@ -59,30 +39,37 @@ WorkFlow::WorkFlow(std::string wf_name, std::shared_ptr<Client> client)
 }
 
 WorkFlow::~WorkFlow() {
-  // const auto totaltime =
-  //     metric_.readCounter().getTimeTaken() + metric_.writeCounter().getTimeTaken();
-  // const auto totalcount = metric_.readCounter().getCount() + metric_.writeCounter().getCount();
-  // if (totaltime < 100000) {
-  //   std::cout << totalcount << " operations took " << std::setprecision(6) <<
-  //   std::ios_base::fixed
-  //             << totaltime << " msecs." << std::endl;
-  // } else {
-  //   std::cout << totalcount << " operations took " << std::setprecision(6) <<
-  //   std::ios_base::fixed
-  //             << totaltime / 100000 << " secs." << std::endl;
-  // }
+  if (metric_.getCount() == 0) {
+    return;
+  }
 
-  print_stats(metric_.readCounter(), "read");
-  // print_stats(metric_.writeCounter(), "write");
+  std::cout << metric_.getCount() << " operations took ";
+  if (metric_.getTimeTaken() < 100000) {
+    std::cout << metric_.getTimeTaken() << " msecs." << std::endl;
+  } else {
+    std::cout << metric_.getTimeTaken() / 100000 << " secs." << std::endl;
+  }
+
+  for (int idx = model::Bucket::MSECS_0_TO_10; idx < model::Bucket::MAX_BUCKET_VALUES; idx++) {
+    if (metric_.bucketCounts()[idx] == 0) {
+      continue;
+    }
+    std::cout << metric_.bucketCounts()[idx] << " operations took an avg of "
+              << metric_.bucketAverages()[idx] << " msecs" << std::endl;
+  }
+  std::cerr << metric_.getWorstTime() << " was the max time for any event in this run" << std::endl;
 }
 
-WorkFlow::Scope::Scope(model::Metrics &m) : m(m) { m.readCounter().start_watch(); }
+WorkFlow::Scope::Scope(model::Metrics &m, model::StateStatistics state, std::string funcname)
+    : m(m), state(state), funcname(funcname) {
+  m.counter().start_watch();
+}
 
-WorkFlow::Scope::~Scope() { m.readCounter().stop_watch(); }
+WorkFlow::Scope::~Scope() { m.accum(m.counter().stop_watch(), state, funcname); }
 
 tl::expected<types::IdType, types::Error>
 WorkFlow::createOrder(std::string clord_id, std::optional<types::IdType> &&basket_id) {
-  Scope s(metric_);
+  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
   types::Order order{.id = types::getNewOrderIdForClient(client_->client_id_),
                      .clord_id = types::getNewClordIdForClient(client_->client_id_),
                      .parent_order_id = 0,
@@ -94,7 +81,7 @@ WorkFlow::createOrder(std::string clord_id, std::optional<types::IdType> &&baske
 tl::expected<types::IdType, types::Error>
 WorkFlow::createChildOrder(std::string clord_id, std::string &&parent_clord_id,
                            std::optional<types::IdType> &&basket_id) {
-  Scope s(metric_);
+  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
   return client_->state_->findOrderByClordId(parent_clord_id)
       .and_then([&](types::Order parent_order) -> tl::expected<types::IdType, types::Error> {
         types::Order order{.id = types::getNewOrderIdForClient(client_->client_id_),
@@ -107,7 +94,7 @@ WorkFlow::createChildOrder(std::string clord_id, std::string &&parent_clord_id,
 }
 
 tl::expected<types::IdType, types::Error> WorkFlow::createBasket(std::string &&basket_name) {
-  Scope s(metric_);
+  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
   types::Basket basket{.id = types::getNewBasketIdForClient(client_->client_id_),
                        .name = basket_name,
                        .is_active = true};
@@ -116,7 +103,7 @@ tl::expected<types::IdType, types::Error> WorkFlow::createBasket(std::string &&b
 
 tl::expected<types::IdType, types::Error> WorkFlow::routeOrder(types::IdType order_id,
                                                                std::string broker) {
-  Scope s(metric_);
+  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
   types::Route route{.id = types::getNewRouteIdForClient(client_->client_id_),
                      .order_id = order_id,
                      .clord_id = types::getNewRouteClordIdForClient(client_->client_id_),
@@ -127,7 +114,7 @@ tl::expected<types::IdType, types::Error> WorkFlow::routeOrder(types::IdType ord
 }
 
 tl::expected<void, types::Error> WorkFlow::ackRoute(types::IdType route_id) {
-  Scope s(metric_);
+  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
   return client_->state_->findRoute(route_id).and_then(
       [&](types::Route route) -> tl::expected<void, types::Error> {
         types::Route updroute{route};
@@ -138,7 +125,7 @@ tl::expected<void, types::Error> WorkFlow::ackRoute(types::IdType route_id) {
 
 tl::expected<types::IdType, types::Error>
 WorkFlow::createNewManualFillForRoute(types::IdType route_id) {
-  Scope s(metric_);
+  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
   return client_->state_->findRoute(route_id).and_then(
       [&](types::Route route) -> tl::expected<types::IdType, types::Error> {
         types::Fill fill{.id = types::getNewFillIdForClient(client_->client_id_),
@@ -153,7 +140,7 @@ WorkFlow::createNewManualFillForRoute(types::IdType route_id) {
 
 tl::expected<types::IdType, types::Error>
 WorkFlow::addFillForRoute(types::FixClOrdIdType route_clordid, types::FixClOrdIdType &&exec_id) {
-  Scope s(metric_);
+  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
   return client_->state_->findRouteByClordId(route_clordid)
       .and_then([&](types::Route route) -> tl::expected<types::IdType, types::Error> {
         types::Fill fill{.id = types::getNewFillIdForClient(client_->client_id_),

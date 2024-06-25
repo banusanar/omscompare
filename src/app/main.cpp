@@ -2,7 +2,7 @@
 #include "types/route.h"
 #include <argparse/argparse.hpp>
 #include <client.h>
-#include <client_state.h>
+#include <client_state_boost.h>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -165,7 +165,7 @@ private:
   }
 
   tl::expected<void, types::Error> createRoutesAndFills(types::IdType o) {
-    for (int jdx = 0; jdx < inner_loop_size; jdx++) {
+    for (int jdx = 0; jdx < std::min(inner_loop_size, RUN_SIZE); jdx++) {
       std::string fill_broker = broker + "_" + std::to_string(jdx);
       auto result =
           w->routeOrder(o, fill_broker)

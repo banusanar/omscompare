@@ -12,42 +12,29 @@
 namespace omscompare {
 namespace model {
 
+class StateStatistics;
+
 class ClientStateBase {
 public:
-  ClientStateBase() = default;
+  ClientStateBase(types::ClientIdType) {}
   virtual ~ClientStateBase(){};
-  tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const;
-  tl::expected<types::Order, types::Error> findOrderByClordId(types::FixClOrdIdType clordid) const;
-  tl::expected<types::Basket, types::Error> findBasket(types::IdType orderid) const;
-  tl::expected<types::Route, types::Error> findRoute(types::IdType orderid) const;
-  tl::expected<types::Route, types::Error> findRouteByClordId(types::FixClOrdIdType clordid) const;
-  tl::expected<types::Fill, types::Error> findFill(types::IdType orderid) const;
-
-  // empty vector could mean no values or errors??
-  std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id) const;
-  std::vector<types::Route> findRoutesForOrderId(types::IdType order_id,
-                                                 types::RouteStatus status_match) const;
-  std::vector<types::Fill> findFillsForRouteId(types::IdType route_id,
-                                               types::ExecStatus status_match) const;
-  std::vector<types::Fill> findFillsForOrderId(types::IdType basket_id,
-                                               types::ExecStatus status_match) const;
-
-  virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) = 0;
+  virtual StateStatistics counts() const = 0;
+  virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const = 0;
   virtual tl::expected<types::Order, types::Error>
-  findOrderByClordId(types::FixClOrdIdType clordid) = 0;
-  virtual tl::expected<types::Basket, types::Error> findBasket(types::IdType orderid) = 0;
-  virtual tl::expected<types::Route, types::Error> findRoute(types::IdType orderid) = 0;
+  findOrderByClordId(types::FixClOrdIdType clordid) const = 0;
+  virtual tl::expected<types::Basket, types::Error> findBasket(types::IdType orderid) const = 0;
+  virtual tl::expected<types::Route, types::Error> findRoute(types::IdType orderid) const = 0;
   virtual tl::expected<types::Route, types::Error>
-  findRouteByClordId(types::FixClOrdIdType clordid) = 0;
-  virtual tl::expected<types::Fill, types::Error> findFill(types::IdType orderid) = 0;
+  findRouteByClordId(types::FixClOrdIdType clordid) const = 0;
+  virtual tl::expected<types::Fill, types::Error> findFill(types::IdType orderid) const = 0;
 
-  virtual std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id) = 0;
+  virtual std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id) const = 0;
   virtual std::vector<types::Route> findRoutesForOrderId(types::IdType order_id,
-                                                         types::RouteStatus status_match) = 0;
+                                                         types::RouteStatus status_match) const = 0;
   virtual std::vector<types::Fill> findFillsForRouteId(types::IdType route_id,
-                                                       types::ExecStatus status_match) = 0;
+                                                       types::ExecStatus status_match) const = 0;
   virtual std::vector<types::Fill> findFillsForOrderId(types::IdType basket_id,
-                                                       types::ExecStatus status_match) = 0;
+                                                       types::ExecStatus status_match) const = 0;
 
   virtual tl::expected<types::IdType, types::Error> addBasket(types::Basket &&) = 0;
   virtual tl::expected<types::IdType, types::Error> addOrder(types::Order &&) = 0;

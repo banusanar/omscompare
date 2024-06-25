@@ -1,6 +1,7 @@
-#ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
-#define OMSCOMPARE_OMSMODEL_CLIENT_STATE_H_
+#ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_BOOST_H_
+#define OMSCOMPARE_OMSMODEL_CLIENT_STATE_BOOST_H_
 
+#include "types/idtype.h"
 #include <basket.h>
 #include <client_state_base.h>
 #include <fill.h>
@@ -14,24 +15,26 @@ namespace model {
 
 class ClientState : public ClientStateBase {
 public:
-  ClientState();
-
-  virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) override;
+  ClientState(types::ClientIdType);
+  ~ClientState();
+  virtual StateStatistics counts() const override;
+  virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const override;
   virtual tl::expected<types::Order, types::Error>
-  findOrderByClordId(types::FixClOrdIdType clordid) override;
-  virtual tl::expected<types::Basket, types::Error> findBasket(types::IdType orderid) override;
-  virtual tl::expected<types::Route, types::Error> findRoute(types::IdType orderid) override;
+  findOrderByClordId(types::FixClOrdIdType clordid) const override;
+  virtual tl::expected<types::Basket, types::Error>
+  findBasket(types::IdType orderid) const override;
+  virtual tl::expected<types::Route, types::Error> findRoute(types::IdType orderid) const override;
   virtual tl::expected<types::Route, types::Error>
-  findRouteByClordId(types::FixClOrdIdType clordid) override;
-  virtual tl::expected<types::Fill, types::Error> findFill(types::IdType orderid) override;
+  findRouteByClordId(types::FixClOrdIdType clordid) const override;
+  virtual tl::expected<types::Fill, types::Error> findFill(types::IdType orderid) const override;
 
-  virtual std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id) override;
-  virtual std::vector<types::Route> findRoutesForOrderId(types::IdType order_id,
-                                                         types::RouteStatus status_match) override;
-  virtual std::vector<types::Fill> findFillsForRouteId(types::IdType route_id,
-                                                       types::ExecStatus status_match) override;
-  virtual std::vector<types::Fill> findFillsForOrderId(types::IdType basket_id,
-                                                       types::ExecStatus status_match) override;
+  virtual std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id) const override;
+  virtual std::vector<types::Route>
+  findRoutesForOrderId(types::IdType order_id, types::RouteStatus status_match) const override;
+  virtual std::vector<types::Fill>
+  findFillsForRouteId(types::IdType route_id, types::ExecStatus status_match) const override;
+  virtual std::vector<types::Fill>
+  findFillsForOrderId(types::IdType basket_id, types::ExecStatus status_match) const override;
 
   virtual tl::expected<types::IdType, types::Error> addBasket(types::Basket &&) override;
   virtual tl::expected<types::IdType, types::Error> addOrder(types::Order &&) override;
