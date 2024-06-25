@@ -1,6 +1,7 @@
 #ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_SQLITE_H_
 #define OMSCOMPARE_OMSMODEL_CLIENT_STATE_SQLITE_H_
 
+#include <SQLiteCpp/Statement.h>
 #include <client_state_base.h>
 #include <memory>
 #include <types/idtype.h>
@@ -22,11 +23,11 @@ public:
   virtual tl::expected<types::Order, types::Error>
   findOrderByClordId(types::FixClOrdIdType clordid) const override;
   virtual tl::expected<types::Basket, types::Error>
-  findBasket(types::IdType orderid) const override;
-  virtual tl::expected<types::Route, types::Error> findRoute(types::IdType orderid) const override;
+  findBasket(types::IdType basket_id) const override;
+  virtual tl::expected<types::Route, types::Error> findRoute(types::IdType route_id) const override;
   virtual tl::expected<types::Route, types::Error>
   findRouteByClordId(types::FixClOrdIdType clordid) const override;
-  virtual tl::expected<types::Fill, types::Error> findFill(types::IdType orderid) const override;
+  virtual tl::expected<types::Fill, types::Error> findFill(types::IdType fill_id) const override;
 
   virtual std::vector<types::Order> findOrdersForBasketId(types::IdType basket_id) const override;
   virtual std::vector<types::Route>
@@ -56,10 +57,30 @@ public:
   // virtual tl::expected<void, types::Error> deleteRouteForOrder(types::IdType route_id) override;
   // virtual tl::expected<void, types::Error> deleteFillForRoute(types::IdType fill_id) override;
 
+  enum OperationId : int {
+    ADD_BASKET,
+    ADD_ORDER,
+    ADD_ROUTE,
+    ADD_FILL,
+    FIND_ORDER,
+    FIND_ORDER_BY_CLORD_ID,
+    FIND_ORDERS_BY_BASKET_ID,
+    FIND_ROUTE,
+    FIND_ROUTE_BY_CLORD_ID,
+    FIND_ROUTES_BY_ORDER_ID,
+    FIND_BASKET,
+    FIND_FILL,
+    FIND_FILLS_BY_ROUTE_ID,
+    FIND_FILLS_BY_ORDER_ID,
+    UPDATE_ROUTE,
+  };
+
 private:
   std::string client_schema;
   std::shared_ptr<SQLite::Database> dbh;
+  std::map<OperationId, std::shared_ptr<SQLite::Statement>> statements;
 
+  void setup_db_routines();            // throws as part of constructor
   void ddlSql(const std::string &sql); // throws instead of returning error
   tl::expected<void, types::Error> dmlSql(SQLite::Statement &query);
 };

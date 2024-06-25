@@ -15,6 +15,8 @@ namespace omscompare {
 namespace model {
 
 struct StateStatistics {
+  double bad_multiplier{5.0};
+  double worse_multiplier{20.0};
   uint64_t baskets;
   uint64_t orders;
   uint64_t routes;
