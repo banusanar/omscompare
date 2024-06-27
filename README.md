@@ -1,0 +1,1 @@
+This Repo is a simulation of a Simple C++ Order Management System that needs to store the state as part of its memory. This repo is currently a work in progress. Currently this can only compare `boost::multi_index` containers vs `sqlite` in-memory tables.   
