@@ -18,8 +18,8 @@ namespace {
 // const std::string ORDER_MULT_ROUTE =
 // const std::string ORDER_MULT_ROUTE_MULT_FILL = "order_multi_route_multi_fill";
 
-const char *container_opts[] = {"b", "s"};
-const std::string container_types[] = {"boost", "sqlite"};
+const char *container_opts[] = {"b", "d", "s"};
+const std::string container_types[] = {"boost_ordered", "boost_hashed", "sqlite"};
 const char *run_opts[] = {"o", "r", "m", "f"};
 const std::string run_options[] = {"order_route", "order_route_fill", "order_multi_route_fill",
                                    "order_multi_route_multi_fill"};
@@ -31,8 +31,10 @@ struct WorkFlowWrap {
       : appc(std::make_shared<app::Client>(1001)), wfname(container_type),
         inner_loop_size(inner_loop_count) {
 
-    if (container_type == "boost") {
-      appc->init(app::Client::BOOST);
+    if (container_type == "boost_ordered") {
+      appc->init(app::Client::BOOST_ORDERED_INDEX);
+    } else if (container_type == "boost_hashed") {
+      appc->init(app::Client::BOOST_HASHED_INDEX);
     } else if (container_type == "sqlite") {
       appc->init(app::Client::SQLite);
     } else {
@@ -223,7 +225,7 @@ int main(int argc, char **argv) {
   int num_runs = 10;
   try {
     argparse::ArgumentParser program("omscompare");
-    for (int idx = 0; idx < 2; idx++) {
+    for (int idx = 0; idx < 3; idx++) {
       std::string sopt = "-";
       sopt.append(container_opts[idx]);
       std::string bigopt = "--";
@@ -256,7 +258,8 @@ int main(int argc, char **argv) {
 
     auto loop_count = program.get<int>("inner_count");
 
-    if (program["boost"] == false && program["sqlite"] == false) {
+    if (program["boost_ordered"] == false && program["boost_hashed"] == false &&
+        program["sqlite"] == false) {
       std::cout << "Both Boost and Sqlite cannot be turned off for storage" << std::endl;
       return -1;
     }

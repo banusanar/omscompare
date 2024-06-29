@@ -1,19 +1,17 @@
-#ifndef OMSCOMPARE_OMSB_FILL_H_
-#define OMSCOMPARE_OMSB_FILL_H_
+#ifndef OMSCOMPARE_BOOST_HASHED_FILL_H_
+#define OMSCOMPARE_BOOST_HASHED_FILL_H_
 
-#include "types/idtype.h"
-#include <boost/container_hash/detail/hash_integral.hpp>
-#include <boost/container_hash/hash.hpp>
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
+#include <boost/multi_index/tag.hpp>
 #include <boost/multi_index_container.hpp>
-#include <boost/multi_index_container_fwd.hpp>
 
 #include <types/fill.h>
 
 namespace omscompare {
 namespace containers {
+namespace hashed {
 
 struct fill_by_idx {};
 struct fill_by_exec_idx {};
@@ -55,6 +53,7 @@ using FillByIdxType = Fill::index<fill_by_idx>::type;
 using FillByExecIdType = Fill::index<fill_by_exec_idx>::type;
 using FillByOrderIdType = Fill::index<fill_by_order_idx>::type;
 using FillByRouteIdType = Fill::index<fill_by_route_idx>::type;
+} // namespace hashed
 } // namespace containers
 } // namespace omscompare
 

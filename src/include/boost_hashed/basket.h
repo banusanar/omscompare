@@ -1,18 +1,16 @@
-#ifndef OMSCOMPARE_OMSB_BASKET_H_
-#define OMSCOMPARE_OMSB_BASKET_H_
+#ifndef OMSCOMPARE_BOOST_HASHED_BASKET_H_
+#define OMSCOMPARE_BOOST_HASHED_BASKET_H_
 
-#include <boost/container_hash/detail/hash_integral.hpp>
-#include <boost/container_hash/hash.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/tag.hpp>
 #include <boost/multi_index_container.hpp>
-#include <boost/multi_index_container_fwd.hpp>
 
 #include <types/basket.h>
 
 namespace omscompare {
 namespace containers {
+namespace hashed {
 
 struct basket_by_idx {};
 struct basket_by_name_idx {};
@@ -29,6 +27,7 @@ using Basket = boost::multi_index_container<
 
 using BasketByIdxType = Basket::index<basket_by_idx>::type;
 using BasketByNameType = Basket::index<basket_by_name_idx>::type;
+} // namespace hashed
 } // namespace containers
 } // namespace omscompare
 

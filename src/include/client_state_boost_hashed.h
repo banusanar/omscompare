@@ -1,11 +1,11 @@
-#ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_BOOST_H_
-#define OMSCOMPARE_OMSMODEL_CLIENT_STATE_BOOST_H_
+#ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_BOOST_HASHED_H_
+#define OMSCOMPARE_OMSMODEL_CLIENT_STATE_BOOST_HASHED_H_
 
 #include "types/idtype.h"
-#include <boost/basket.h>
-#include <boost/fill.h>
-#include <boost/order.h>
-#include <boost/route.h>
+#include <boost_hashed/basket.h>
+#include <boost_hashed/fill.h>
+#include <boost_hashed/order.h>
+#include <boost_hashed/route.h>
 #include <client_state_base.h>
 #include <map>
 #include <metrics.h>
@@ -13,10 +13,10 @@
 namespace omscompare {
 namespace model {
 
-class ClientStateBoost : public ClientStateBase {
+class ClientStateBoostHashed : public ClientStateBase {
 public:
-  ClientStateBoost(types::ClientIdType);
-  ~ClientStateBoost();
+  ClientStateBoostHashed(types::ClientIdType);
+  ~ClientStateBoostHashed();
   virtual StateStatistics counts() const override;
   virtual tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const override;
   virtual tl::expected<types::Order, types::Error>
@@ -71,10 +71,10 @@ public:
   // };
 
 private:
-  containers::Basket baskets_;
-  containers::Order orders_;
-  containers::Route routes_;
-  containers::Fill fills_;
+  containers::hashed::Basket baskets_;
+  containers::hashed::Order orders_;
+  containers::hashed::Route routes_;
+  containers::hashed::Fill fills_;
 
   // std::map<std::string, Metrics> metrics_;
 };

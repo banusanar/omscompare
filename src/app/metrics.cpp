@@ -30,7 +30,7 @@ void Metrics::accum(double time_for_run, const StateStatistics &state,
     }
   }
   worst_time = std::max(double(time_for_run), worst_time);
-  //std::cerr << state << " time: " << time_for_run << " msecs for " << funcname << std::endl;
+  // std::cerr << state << " time: " << time_for_run << " msecs for " << funcname << std::endl;
 }
 
 } // namespace model

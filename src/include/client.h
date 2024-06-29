@@ -17,7 +17,7 @@ class WorkFlow;
 
 class Client {
 public:
-  enum ContainerType { BOOST = 0, SQLite = 1, UNKNOWN = 99 };
+  enum ContainerType { BOOST_ORDERED_INDEX = 0, BOOST_HASHED_INDEX = 1, SQLite = 2, UNKNOWN = 99 };
 
   explicit Client(types::ClientIdType clientid)
       : client_id_(clientid), is_ready_(false), state_lock_(), state_() {}

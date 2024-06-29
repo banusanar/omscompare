@@ -2,17 +2,13 @@
 #include "client.h"
 #include "metrics.h"
 #include <algorithm>
-#include <basket.h>
-#include <client_state_boost.h>
+#include <client_state_base.h>
 #include <climits>
-#include <fill.h>
 #include <functional>
 #include <iomanip>
 #include <ios>
 #include <memory>
-#include <order.h>
 #include <random>
-#include <route.h>
 #include <sys/types.h>
 #include <tl/expected.hpp>
 #include <types/idtype.h>
@@ -54,8 +50,10 @@ WorkFlow::~WorkFlow() {
     if (metric_.bucketCounts()[idx] == 0) {
       continue;
     }
-    std::cout << metric_.bucketCounts()[idx] << " operations took an avg of "
-              << metric_.bucketAverages()[idx] << " msecs" << std::endl;
+    std::cout << std::fixed << std::setprecision(4)
+              << (metric_.bucketCounts()[idx] * 100 / (float)metric_.getCount())
+              << "% operations took an avg of " << metric_.bucketAverages()[idx] << " msecs"
+              << std::endl;
   }
   std::cerr << metric_.getWorstTime() << " was the max time for any event in this run" << std::endl;
 }
