@@ -9,6 +9,8 @@ template <typename Basket, typename Order, typename Route, typename Fill> struct
   Order orders_;
   Route routes_;
   Fill fills_;
+
+  BoostStorage() : baskets_(), orders_(), routes_(), fills_() {}
 };
 
 } // namespace containers

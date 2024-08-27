@@ -44,12 +44,10 @@ struct WorkFlowWrap {
 
     if (container_type == "boost_ordered") {
       appc->init(app::Client::BOOST_ORDERED_INDEX);
-      btreewf = std::make_shared<app::WorkFlowTempl<BoostBtreeStorage>>(
-          new app::WorkFlowTempl<BoostBtreeStorage>(container_type, btreecl));
+      btreewf = std::make_shared<app::WorkFlowTempl<BoostBtreeStorage>>(container_type, btreecl);
     } else if (container_type == "boost_hashed") {
       appc->init(app::Client::BOOST_HASHED_INDEX);
-      bhashwf = std::make_shared<app::WorkFlowTempl<BoostHashedStorage>>(
-          new app::WorkFlowTempl<BoostHashedStorage>(container_type, bhashcl));
+      bhashwf = std::make_shared<app::WorkFlowTempl<BoostHashedStorage>>(container_type, bhashcl);
     } else if (container_type == "sqlite") {
       appc->init(app::Client::SQLite);
     } else {

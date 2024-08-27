@@ -1,7 +1,6 @@
 #ifndef OMSCOMPARE_OMSMODEL_CLIENT_STATE_TEMPLATE_H_
 #define OMSCOMPARE_OMSMODEL_CLIENT_STATE_TEMPLATE_H_
 
-#include "client_state_boost.h"
 #include <tl/expected.hpp>
 #include <types/basket.h>
 #include <types/error.h>
@@ -20,7 +19,7 @@ class StateStatistics;
 
 template <typename STORAGE> class ClientState {
 public:
-  ClientState(types::ClientIdType) : m_dbh() {}
+  ClientState() : m_dbh() {}
   ~ClientState() {}
   StateStatistics counts() const;
   tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const;
@@ -53,7 +52,7 @@ private:
 
 template <> class ClientState<BoostBtreeStorage> {
 public:
-  ClientState(types::ClientIdType) : m_dbh() {}
+  ClientState() : m_dbh() {}
   ~ClientState() {}
   StateStatistics counts() const;
   tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const;
@@ -88,7 +87,7 @@ using ClientStateBtreeStorage = class ClientState<BoostBtreeStorage>;
 
 template <> class ClientState<BoostHashedStorage> {
 public:
-  ClientState(types::ClientIdType) : m_dbh() {}
+  ClientState() : m_dbh() {}
   ~ClientState() {}
   StateStatistics counts() const;
   tl::expected<types::Order, types::Error> findOrder(types::IdType orderid) const;

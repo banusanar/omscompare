@@ -1,7 +1,7 @@
 #ifndef OMSCOMPARE_OMSMODEL_CLIENT_TEMPL_H_
 #define OMSCOMPARE_OMSMODEL_CLIENT_TEMPL_H_
 
-#include "client_state_template.h"
+#include "client_state_templ.h"
 #include <cstdint>
 #include <memory>
 #include <mutex>
