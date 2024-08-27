@@ -1,4 +1,5 @@
-#include <client_state_sqlite.h>
+#include <client_state_duckdb.h>
+#include <duckdb.h>
 #include <metrics.h>
 #include <types/error.h>
 #include <types/fill.h>
@@ -14,6 +15,7 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <sstream>
 #include <string>
 #include <tl/expected.hpp>
 #include <vector>
@@ -40,15 +42,18 @@ const std::string insert_corrected_fill =
     "(?1,?2,?3,?4,?5,?6,?7);";
 const std::string update_route = ".routes SET status=?1 ,broker=?2, data=?3 WHERE ";
 
-types::Order getOrderFromSql(const SQLite::Statement &query) {
-  types::Order o = {.id = static_cast<types::IdType>(query.getColumn(0).getInt64()),
-                    .clord_id = query.getColumn(1).getString(),
-                    .parent_order_id = static_cast<types::IdType>(query.getColumn(2).getInt64())};
-  if (query.getColumn(3).getInt64() > 0)
-    o.basket_id = std::make_optional(static_cast<types::IdType>(query.getColumn(3).getInt64()));
+std::vector<types::Order> getOrderFromSql(std::unique_ptr<duckdb::MaterializedQueryResult> result) {
+  std::vector<types::Order> orders;
+  for(auto& row : *result) {
+    types::Order o= {.id = static_cast<types::IdType>(row.GetValue<types::IdType>(0)),
+                    .clord_id = row.GetValue<std::string>(1),
+                    .parent_order_id = static_cast<types::IdType>(row.GetValue<types::IdType>(2))};
+    if (auto b = row.GetValue<types::IdType>(3) > 0)
+      o.basket_id = b;
 
-  memcpy(o.data, query.getColumn(4).getBlob(), query.getColumn(4).getBytes());
-  return (o);
+   // memcpy(o.data, row.GetValue<std::byte>(idx_t col_idx)
+  }
+  return (orders);
 }
 
 types::Basket getBasketFromSql(SQLite::Statement &query) {
@@ -83,51 +88,77 @@ types::Fill getFillFromSql(SQLite::Statement &query) {
 
 } // namespace
 
-void ClientStateSqlite::ddlSql(const std::string &sql) {
-  if (dbh->tryExec(sql) != SQLite::OK) {
+void ClientStateDuckdb::ddlSql(const std::string &sql) {
+  auto res = dbh->Query(sql);
+  if(res->HasError()) {
     std::stringstream os;
-    os << "[" << sql << "] failed. " << dbh->getErrorMsg();
+    os << "[" << sql << "] failed. " << res->GetError();
     throw std::runtime_error(os.str());
   }
 }
 
-tl::expected<void, types::Error> ClientStateSqlite::dmlSql(SQLite::Statement &query) {
-  try {
-    query.exec();
-  } catch (const SQLite::Exception &ae) {
-    return tl::make_unexpected(
-        types::Error{.what = std::string(dbh->getErrorMsg() + query.getExpandedSQL())});
-  } catch (const std::exception &ue) {
-    return tl::make_unexpected(
-        types::Error{.what = std::string(dbh->getErrorMsg() + query.getExpandedSQL())});
-  }
+// tl::expected<void, types::Error> ClientStateDuckdb::dmlSql(std::shared_ptr<duckdb::PreparedStatement> query)
+//   try {
+//     query->Execute();
+//   } catch (const SQLite::Exception &ae) {
+//     return tl::make_unexpected(
+//         types::Error{.what = std::string(dbh->getErrorMsg() + query.getExpandedSQL())});
+//   } catch (const std::exception &ue) {
+//     return tl::make_unexpected(
+//         types::Error{.what = std::string(dbh->getErrorMsg() + query.getExpandedSQL())});
+//   }
 
-  return {};
-}
+//   return {};
+// }
 
-ClientStateSqlite::ClientStateSqlite(types::ClientIdType client_id)
+ClientStateDuckdb::ClientStateDuckdb(types::ClientIdType client_id)
     : ClientStateBase(client_id), client_schema("client_" + std::to_string(client_id)),
-      dbh(std::make_shared<SQLite::Database>(
-          "file:client_" + std::to_string(client_id) + "?mode=memory",
-          SQLite::OPEN_URI | SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE | SQLite::OPEN_MEMORY |
-              SQLite::OPEN_NOMUTEX)) {
+      db(), 
+      dbh() {
+  if (duckdb_open(NULL, &(*db)) == DuckDBError) {
+    throw std::runtime_error("Cannot open database");
+  }
+  if (duckdb_connect(*db, &(*dbh)) == DuckDBError) {
+    throw std::runtime_error("Cannot create database connection");
+  }
   setup_db_routines();
 }
 
-StateStatistics ClientStateSqlite::counts() const {
+ClientStateDuckdb::~ClientStateDuckdb() {
+  for(auto [key, stmt] : statements) {
+    duckdb_destroy_prepare(&(*stmt));
+  }
+  // cleanup
+  duckdb_disconnect(&(*dbh));
+  duckdb_close(&(*db));
+}
+
+StateStatistics ClientStateDuckdb::counts() const {
   // TODO
   return StateStatistics{0, 0, 0, 0};
 }
 
-tl::expected<types::Order, types::Error> ClientStateSqlite::findOrder(types::IdType orderid) const {
-  auto query = statements.find(OperationId::FIND_ORDER)->second;
-  query->reset();
-  query->bind(1, static_cast<int64_t>(orderid));
-  if (!query->executeStep()) {
-    return tl::make_unexpected(types::Error{.what = "Invalid orderid"});
+tl::expected<types::Order, types::Error> ClientStateDuckdb::findOrder(types::IdType orderid) const {
+  auto query = *statements.find(OperationId::FIND_ORDER)->second;
+  duckdb_clear_bindings(query);
+  duckdb_bind_int64(query, 1, 42);
+  duckdb_result result;
+  auto rc = duckdb_execute_prepared(query, &result);
+  if(rc != DuckDBSuccess) {
+    return tl::make_unexpected(types::Error{.what = duckdb_result_error(&result)});
   }
 
-  return {getOrderFromSql(*query)};
+  int rows = duckdb_row_count(&result);
+  if( rows != 1) { //There should be only 1 result
+    if(rows == 0)
+      return tl::make_unexpected(types::Error{.what = "No order found"});
+    else 
+      return tl::make_unexpected(types::Error{.what = "Duplicate result found"});
+  }
+
+  types::Order o = getOrderFromSql(&result, 1);
+  duckdb_destroy_result(&result);
+  return {o};
 }
 
 tl::expected<types::Order, types::Error>

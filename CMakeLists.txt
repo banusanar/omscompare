@@ -6,6 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Release)
 
+#string(APPEND CMAKE_CXX_FLAGS " -Wall")
+#string(APPEND CMAKE_CXX_FLAGS " -Wbuiltin-macro-redefined")
+#string(APPEND CMAKE_CXX_FLAGS " -pedantic")
+#string(APPEND CMAKE_CXX_FLAGS " -Werror")
+
 find_package(Boost 1.85.0 REQUIRED )
 include_directories(${Boost_INCLUDE_DIRS})
 
