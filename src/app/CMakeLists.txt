@@ -4,6 +4,8 @@ add_library(omslib /dev/null)
 target_sources(omslib PRIVATE
     client_state_boost.cpp 
     client_state_boost_hashed.cpp 
+    client_state_template_btree.cpp 
+    client_state_template_hashed.cpp 
     client_state_sqlite.cpp 
     client_state_sqlite_setup.cpp 
     client.cpp

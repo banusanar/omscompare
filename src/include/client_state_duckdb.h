@@ -3,9 +3,9 @@
 
 #include <client_state_base.h>
 #include <duckdb.h>
+#include <duckdb.hpp>
 #include <memory>
 #include <types/idtype.h>
-#include <duckdb.hpp>
 
 namespace omscompare {
 namespace model {
@@ -79,7 +79,7 @@ private:
 
   void setup_db_routines();            // throws as part of constructor
   void ddlSql(const std::string &sql); // throws instead of returning error
-  //tl::expected<void, types::Error> dmlSql(SQLite::Statement &query);
+  // tl::expected<void, types::Error> dmlSql(SQLite::Statement &query);
 };
 
 } // namespace model

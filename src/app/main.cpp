@@ -1,5 +1,10 @@
+#include "boost_btree_storage.h"
+#include "boost_hashed_storage.h"
+#include "client_templ.h"
 #include "types/error.h"
 #include "types/route.h"
+#include "workflows.h"
+#include "workflows_templ.h"
 #include <argparse/argparse.hpp>
 #include <client.h>
 #include <client_state_boost.h>
@@ -26,15 +31,25 @@ const std::string run_options[] = {"order_route", "order_route_fill", "order_mul
 const int RUN_SIZE = 256;
 
 using namespace omscompare;
+
+using BoostBTreeWorkflows = std::shared_ptr<app::WorkFlowTempl<BoostBtreeStorage>>;
+using BoostHashedWorkflows = std::shared_ptr<app::WorkFlowTempl<BoostHashedStorage>>;
+using BoostBTreeClientType = app::ClientTempl<BoostBtreeStorage>;
+using BoostHashedClientType = app::ClientTempl<BoostHashedStorage>;
+
 struct WorkFlowWrap {
   WorkFlowWrap(std::string container_type, int inner_loop_count)
-      : appc(std::make_shared<app::Client>(1001)), wfname(container_type),
-        inner_loop_size(inner_loop_count) {
+      : appc(std::make_shared<app::Client>(1001)), btreewf(), bhashwf(), btreecl(1001),
+        bhashcl(1001), wfname(container_type), inner_loop_size(inner_loop_count) {
 
     if (container_type == "boost_ordered") {
       appc->init(app::Client::BOOST_ORDERED_INDEX);
+      btreewf = std::make_shared<app::WorkFlowTempl<BoostBtreeStorage>>(
+          new app::WorkFlowTempl<BoostBtreeStorage>(container_type, btreecl));
     } else if (container_type == "boost_hashed") {
       appc->init(app::Client::BOOST_HASHED_INDEX);
+      bhashwf = std::make_shared<app::WorkFlowTempl<BoostHashedStorage>>(
+          new app::WorkFlowTempl<BoostHashedStorage>(container_type, bhashcl));
     } else if (container_type == "sqlite") {
       appc->init(app::Client::SQLite);
     } else {
@@ -120,6 +135,10 @@ struct WorkFlowWrap {
 private:
   std::shared_ptr<app::Client> appc;
   std::shared_ptr<app::WorkFlow> w;
+  BoostBTreeClientType btreecl;
+  BoostHashedClientType bhashcl;
+  BoostBTreeWorkflows btreewf;
+  BoostHashedWorkflows bhashwf;
   std::string wfname;
   std::string broker;
   std::string order_clord_id;

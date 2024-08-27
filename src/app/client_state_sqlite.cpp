@@ -53,8 +53,8 @@ types::Order getOrderFromSql(const SQLite::Statement &query) {
 
 types::Basket getBasketFromSql(SQLite::Statement &query) {
   return (types::Basket{.id = static_cast<types::IdType>(query.getColumn(0).getInt64()),
-                                 .name = query.getColumn(1).getString(),
-                                 .is_active = (query.getColumn(2).getUInt() == 1) ? true : false});
+                        .name = query.getColumn(1).getString(),
+                        .is_active = (query.getColumn(2).getUInt() == 1) ? true : false});
 }
 
 types::Route getRouteFromSql(SQLite::Statement &query) {

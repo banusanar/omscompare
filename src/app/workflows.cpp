@@ -1,7 +1,7 @@
 #include "workflows.h"
 #include "client.h"
 #include "metrics.h"
-#include <algorithm>
+#include "uuid.h"
 #include <client_state_base.h>
 #include <climits>
 #include <functional>
@@ -15,17 +15,6 @@
 
 namespace omscompare {
 namespace app {
-
-namespace {
-
-void generateRandomObj(std::byte *data, int size) {
-  using random_bytes_engine =
-      std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned char>;
-  random_bytes_engine rbe;
-  std::generate_n(data, size, [rbe]() mutable { return std::byte(rbe()); });
-}
-
-} // namespace
 
 WorkFlow::WorkFlow(std::string wf_name, std::shared_ptr<Client> client)
     : workflow_name(wf_name), client_(client), metric_() {
@@ -72,7 +61,7 @@ WorkFlow::createOrder(std::string clord_id, std::optional<types::IdType> &&baske
                      .clord_id = types::getNewClordIdForClient(client_->client_id_),
                      .parent_order_id = 0,
                      .basket_id = basket_id};
-  generateRandomObj(order.data, types::DATA_SIZE);
+  uuid::generate_random_obj(order.data, types::DATA_SIZE);
   return client_->state_->addOrder(std::move(order));
 }
 
@@ -86,7 +75,7 @@ WorkFlow::createChildOrder(std::string clord_id, std::string &&parent_clord_id,
                            .clord_id = types::getNewClordIdForClient(client_->client_id_),
                            .parent_order_id = parent_order.id,
                            .basket_id = basket_id};
-        generateRandomObj(order.data, types::DATA_SIZE);
+        uuid::generate_random_obj(order.data, types::DATA_SIZE);
         return client_->state_->addOrder(std::move(order));
       });
 }
@@ -107,7 +96,7 @@ tl::expected<types::IdType, types::Error> WorkFlow::routeOrder(types::IdType ord
                      .clord_id = types::getNewRouteClordIdForClient(client_->client_id_),
                      .status = types::RouteStatus::SENT_TO_BROKER,
                      .broker = broker};
-  generateRandomObj(route.data, types::DATA_SIZE);
+  uuid::generate_random_obj(route.data, types::DATA_SIZE);
   return client_->state_->addRouteForOrder(std::move(route), order_id);
 }
 
@@ -131,7 +120,7 @@ WorkFlow::createNewManualFillForRoute(types::IdType route_id) {
                          .order_id = route.order_id,
                          .exec_id = types::getNewExecIdForClient(client_->client_id_, route.id),
                          .status = types::ExecStatus::NEW};
-        generateRandomObj(fill.data, types::DATA_SIZE);
+        uuid::generate_random_obj(fill.data, types::DATA_SIZE);
         return client_->state_->addFillForRoute(std::move(fill), route_id);
       });
 }
@@ -146,7 +135,7 @@ WorkFlow::addFillForRoute(types::FixClOrdIdType route_clordid, types::FixClOrdId
                          .order_id = route.order_id,
                          .exec_id = exec_id,
                          .status = types::ExecStatus::NEW};
-        generateRandomObj(fill.data, types::DATA_SIZE);
+        uuid::generate_random_obj(fill.data, types::DATA_SIZE);
         return client_->state_->addFillForRoute(std::move(fill), route.id);
       });
 }

@@ -1,3 +1,5 @@
+#ifndef OMSCOMPARE_OMSMODEL_WORKFLOWS_H_
+#define OMSCOMPARE_OMSMODEL_WORKFLOWS_H_
 #include "client.h"
 #include "metrics.h"
 #include <atomic>
@@ -58,3 +60,5 @@ private:
 
 } // namespace app
 } // namespace omscompare
+
+#endif

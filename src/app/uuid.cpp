@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <climits>
 #include <random>
 #include <sstream>
 
@@ -37,5 +39,13 @@ std::string generate_uuid_v4() {
   };
   return ss.str();
 }
+
+void generate_random_obj(std::byte *data, int size) {
+  using random_bytes_engine =
+      std::independent_bits_engine<std::default_random_engine, CHAR_BIT, unsigned char>;
+  random_bytes_engine rbe;
+  std::generate_n(data, size, [rbe]() mutable { return std::byte(rbe()); });
+}
+
 } // namespace uuid
 } // namespace omscompare
