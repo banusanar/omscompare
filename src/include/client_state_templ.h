@@ -118,7 +118,7 @@ private:
   BoostHashedStorage m_dbh;
 };
 
-using ClientStateHashedStorage = class ClientState<BoostBtreeStorage>;
+using ClientStateHashedStorage = class ClientState<BoostHashedStorage>;
 
 } // namespace model
 } // namespace omscompare

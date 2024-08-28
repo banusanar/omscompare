@@ -28,7 +28,7 @@ WorkFlow::~WorkFlow() {
     return;
   }
 
-  std::cout << metric_.getCount() << " operations took ";
+  std::cout << metric_.getCount() << " operations in " << workflow_name << " took ";
   if (metric_.getTimeTaken() < 100000) {
     std::cout << metric_.getTimeTaken() << " msecs." << std::endl;
   } else {
@@ -56,7 +56,7 @@ WorkFlow::Scope::~Scope() { m.accum(m.counter().stop_watch(), state, funcname); 
 
 tl::expected<types::IdType, types::Error>
 WorkFlow::createOrder(std::string clord_id, std::optional<types::IdType> &&basket_id) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   types::Order order{.id = types::getNewOrderIdForClient(client_->client_id_),
                      .clord_id = types::getNewClordIdForClient(client_->client_id_),
                      .parent_order_id = 0,
@@ -68,7 +68,7 @@ WorkFlow::createOrder(std::string clord_id, std::optional<types::IdType> &&baske
 tl::expected<types::IdType, types::Error>
 WorkFlow::createChildOrder(std::string clord_id, std::string &&parent_clord_id,
                            std::optional<types::IdType> &&basket_id) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   return client_->state_->findOrderByClordId(parent_clord_id)
       .and_then([&](types::Order parent_order) -> tl::expected<types::IdType, types::Error> {
         types::Order order{.id = types::getNewOrderIdForClient(client_->client_id_),
@@ -81,7 +81,7 @@ WorkFlow::createChildOrder(std::string clord_id, std::string &&parent_clord_id,
 }
 
 tl::expected<types::IdType, types::Error> WorkFlow::createBasket(std::string &&basket_name) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   types::Basket basket{.id = types::getNewBasketIdForClient(client_->client_id_),
                        .name = basket_name,
                        .is_active = true};
@@ -90,7 +90,7 @@ tl::expected<types::IdType, types::Error> WorkFlow::createBasket(std::string &&b
 
 tl::expected<types::IdType, types::Error> WorkFlow::routeOrder(types::IdType order_id,
                                                                std::string broker) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   types::Route route{.id = types::getNewRouteIdForClient(client_->client_id_),
                      .order_id = order_id,
                      .clord_id = types::getNewRouteClordIdForClient(client_->client_id_),
@@ -101,7 +101,7 @@ tl::expected<types::IdType, types::Error> WorkFlow::routeOrder(types::IdType ord
 }
 
 tl::expected<void, types::Error> WorkFlow::ackRoute(types::IdType route_id) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   return client_->state_->findRoute(route_id).and_then(
       [&](types::Route route) -> tl::expected<void, types::Error> {
         types::Route updroute{route};
@@ -112,7 +112,7 @@ tl::expected<void, types::Error> WorkFlow::ackRoute(types::IdType route_id) {
 
 tl::expected<types::IdType, types::Error>
 WorkFlow::createNewManualFillForRoute(types::IdType route_id) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   return client_->state_->findRoute(route_id).and_then(
       [&](types::Route route) -> tl::expected<types::IdType, types::Error> {
         types::Fill fill{.id = types::getNewFillIdForClient(client_->client_id_),
@@ -127,7 +127,7 @@ WorkFlow::createNewManualFillForRoute(types::IdType route_id) {
 
 tl::expected<types::IdType, types::Error>
 WorkFlow::addFillForRoute(types::FixClOrdIdType route_clordid, types::FixClOrdIdType &&exec_id) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   return client_->state_->findRouteByClordId(route_clordid)
       .and_then([&](types::Route route) -> tl::expected<types::IdType, types::Error> {
         types::Fill fill{.id = types::getNewFillIdForClient(client_->client_id_),

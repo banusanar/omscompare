@@ -42,7 +42,7 @@ public:
   tl::expected<types::IdType, types::Error> addFillForRoute(types::FixClOrdIdType route_clordid,
                                                             types::FixClOrdIdType &&exec_id);
 
-  std::shared_ptr<const model::ClientStateBase> clientRO() const { return client_->state_; }
+  const model::ClientState<CONTAINER_TYPE>& clientRO() const { return client_.state_; }
 
   struct Scope {
     Scope(model::Metrics &m, model::StateStatistics, std::string);
@@ -68,7 +68,7 @@ template <typename T> WorkFlowTempl<T>::~WorkFlowTempl() {
     return;
   }
 
-  std::cout << metric_.getCount() << " operations took ";
+  std::cout << metric_.getCount() << " operations in " << workflow_name << " took ";
   if (metric_.getTimeTaken() < 100000) {
     std::cout << metric_.getTimeTaken() << " msecs." << std::endl;
   } else {
@@ -101,7 +101,7 @@ template <typename T> WorkFlowTempl<T>::Scope::~Scope() {
 template <typename T>
 tl::expected<types::IdType, types::Error>
 WorkFlowTempl<T>::createOrder(std::string clord_id, std::optional<types::IdType> &&basket_id) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   types::Order order{.id = types::getNewOrderIdForClient(client_.client_id_),
                      .clord_id = types::getNewClordIdForClient(client_.client_id_),
                      .parent_order_id = 0,
@@ -114,7 +114,7 @@ template <typename T>
 tl::expected<types::IdType, types::Error>
 WorkFlowTempl<T>::createChildOrder(std::string clord_id, std::string &&parent_clord_id,
                                    std::optional<types::IdType> &&basket_id) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   return client_.state_.findOrderByClordId(parent_clord_id)
       .and_then([&](types::Order parent_order) -> tl::expected<types::IdType, types::Error> {
         types::Order order{.id = types::getNewOrderIdForClient(client_.client_id_),
@@ -129,7 +129,7 @@ WorkFlowTempl<T>::createChildOrder(std::string clord_id, std::string &&parent_cl
 template <typename T>
 tl::expected<types::IdType, types::Error>
 WorkFlowTempl<T>::createBasket(std::string &&basket_name) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   types::Basket basket{.id = types::getNewBasketIdForClient(client_.client_id_),
                        .name = basket_name,
                        .is_active = true};
@@ -139,7 +139,7 @@ WorkFlowTempl<T>::createBasket(std::string &&basket_name) {
 template <typename T>
 tl::expected<types::IdType, types::Error> WorkFlowTempl<T>::routeOrder(types::IdType order_id,
                                                                        std::string broker) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   types::Route route{.id = types::getNewRouteIdForClient(client_.client_id_),
                      .order_id = order_id,
                      .clord_id = types::getNewRouteClordIdForClient(client_.client_id_),
@@ -151,7 +151,7 @@ tl::expected<types::IdType, types::Error> WorkFlowTempl<T>::routeOrder(types::Id
 
 template <typename T>
 tl::expected<void, types::Error> WorkFlowTempl<T>::ackRoute(types::IdType route_id) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   return client_.state_.findRoute(route_id).and_then(
       [&](types::Route route) -> tl::expected<void, types::Error> {
         types::Route updroute{route};
@@ -163,7 +163,7 @@ tl::expected<void, types::Error> WorkFlowTempl<T>::ackRoute(types::IdType route_
 template <typename T>
 tl::expected<types::IdType, types::Error>
 WorkFlowTempl<T>::createNewManualFillForRoute(types::IdType route_id) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   return client_.state_.findRoute(route_id).and_then(
       [&](types::Route route) -> tl::expected<types::IdType, types::Error> {
         types::Fill fill{.id = types::getNewFillIdForClient(client_.client_id_),
@@ -180,7 +180,7 @@ template <typename T>
 tl::expected<types::IdType, types::Error>
 WorkFlowTempl<T>::addFillForRoute(types::FixClOrdIdType route_clordid,
                                   types::FixClOrdIdType &&exec_id) {
-  Scope s(metric_, clientRO()->counts(), __FUNCTION__);
+  Scope s(metric_, clientRO().counts(), __FUNCTION__);
   return client_.state_.findRouteByClordId(route_clordid)
       .and_then([&](types::Route route) -> tl::expected<types::IdType, types::Error> {
         types::Fill fill{.id = types::getNewFillIdForClient(client_.client_id_),

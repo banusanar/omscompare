@@ -1,10 +1,9 @@
 #include "client_state_templ.h"
 #include <bits/ranges_base.h>
-#include <boost/basket.h>
-#include <boost/fill.h>
-#include <boost/order.h>
-#include <boost/route.h>
-#include <client_state_boost.h>
+#include <boost_hashed/basket.h>
+#include <boost_hashed/fill.h>
+#include <boost_hashed/order.h>
+#include <boost_hashed/route.h>
 #include <iomanip>
 #include <metrics.h>
 #include <tl/expected.hpp>
@@ -15,7 +14,7 @@ namespace model {
 
 const int BENCHMARK_SIZE = 100000;
 using Error = types::Error;
-using namespace containers;
+using namespace containers::hashed;
 
 StateStatistics ClientStateHashedStorage::counts() const {
   return StateStatistics{.baskets = m_dbh.baskets_.size(),
