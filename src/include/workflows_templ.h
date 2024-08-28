@@ -42,7 +42,7 @@ public:
   tl::expected<types::IdType, types::Error> addFillForRoute(types::FixClOrdIdType route_clordid,
                                                             types::FixClOrdIdType &&exec_id);
 
-  const model::ClientState<CONTAINER_TYPE>& clientRO() const { return client_.state_; }
+  const model::ClientState<CONTAINER_TYPE> &clientRO() const { return client_.state_; }
 
   struct Scope {
     Scope(model::Metrics &m, model::StateStatistics, std::string);

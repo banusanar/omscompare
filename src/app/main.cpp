@@ -23,11 +23,11 @@ namespace {
 // const std::string ORDER_MULT_ROUTE =
 // const std::string ORDER_MULT_ROUTE_MULT_FILL = "order_multi_route_multi_fill";
 
-const char *container_opts[] = {"b", "d"}; //, "s"};
+const char *container_opts[] = {"b", "d"};                               //, "s"};
 const std::string container_types[] = {"boost_ordered", "boost_hashed"}; //, "sqlite"};
-//const char *run_opts[] = {"o", "r", "m", "f"};
-//const std::string run_options[] = {"order_route", "order_route_fill", "order_multi_route_fill",
-//                                   "order_multi_route_multi_fill"};
+// const char *run_opts[] = {"o", "r", "m", "f"};
+// const std::string run_options[] = {"order_route", "order_route_fill", "order_multi_route_fill",
+//                                    "order_multi_route_multi_fill"};
 const int RUN_SIZE = 64;
 
 using namespace omscompare;
@@ -39,59 +39,65 @@ using BoostBTreeClientType = app::ClientTempl<BoostBtreeStorage>;
 using BoostHashedClientType = app::ClientTempl<BoostHashedStorage>;
 
 template <typename WFTYPE>
-tl::expected<void, types::Error> create_fills(std::shared_ptr<WFTYPE>& w, types::IdType route_id, int idx) {
-    return w->clientRO().findRoute(route_id).and_then(
-        [&](types::Route route) -> tl::expected<void, types::Error> {
-          for (int zdx = 0; zdx < std::min(idx, RUN_SIZE); zdx++) {
-            auto y =
-                w->addFillForRoute(route.clord_id, route.broker + "fill_" + std::to_string(zdx));
-            if (!y.has_value()) {
-              return tl::make_unexpected(y.error());
-            }
+tl::expected<void, types::Error> create_fills(std::shared_ptr<WFTYPE> &w, types::IdType route_id,
+                                              int idx) {
+  return w->clientRO().findRoute(route_id).and_then(
+      [&](types::Route route) -> tl::expected<void, types::Error> {
+        for (int zdx = 0; zdx < std::min(idx, RUN_SIZE); zdx++) {
+          auto y = w->addFillForRoute(route.clord_id, route.broker + "fill_" + std::to_string(zdx));
+          if (!y.has_value()) {
+            return tl::make_unexpected(y.error());
           }
-          return {};
-        });
-  }
-
+        }
+        return {};
+      });
+}
 
 template <typename WFTYPE>
-tl::expected<types::IdType, types::Error> create_b_o_rs_fills(const std::string& wfname, std::shared_ptr<WFTYPE>& w, int idx) {
+tl::expected<types::IdType, types::Error> create_b_o_rs_fills(const std::string &wfname,
+                                                              std::shared_ptr<WFTYPE> &w, int idx) {
   auto broker = wfname + "_broker_" + std::to_string(idx);
   auto order_clord_id = wfname + "_order_" + std::to_string(idx);
   return w->createBasket(std::to_string(idx))
-                .and_then([&](auto b) -> tl::expected<types::IdType, types::Error> { return w->createOrder(order_clord_id, {b})
-                  .and_then([&](auto o) -> tl::expected<types::IdType, types::Error> {
-                    for (int jdx = 0; jdx < std::min(idx,RUN_SIZE); jdx++) {
-                      std::string fill_broker = broker + "_" + std::to_string(jdx);
-                      auto result = w->routeOrder(o, fill_broker)
-                                      .and_then([&](types::IdType r) -> tl::expected<void, types::Error> {
-                                          return w->ackRoute(r)
-                                            .and_then([&](void) -> tl::expected<void, types::Error> { return create_fills(w, r, idx); });
-              });
-        if (!result.has_value()) {
-          return tl::make_unexpected(result.error());
-        }
-      }
-      return {o};
-         });
-    });
+      .and_then([&](auto b) -> tl::expected<types::IdType, types::Error> {
+        return w->createOrder(order_clord_id, {b})
+            .and_then([&](auto o) -> tl::expected<types::IdType, types::Error> {
+              for (int jdx = 0; jdx < std::min(idx, RUN_SIZE); jdx++) {
+                std::string fill_broker = broker + "_" + std::to_string(jdx);
+                auto result =
+                    w->routeOrder(o, fill_broker)
+                        .and_then([&](types::IdType r) -> tl::expected<void, types::Error> {
+                          return w->ackRoute(r).and_then(
+                              [&](void) -> tl::expected<void, types::Error> {
+                                return create_fills(w, r, idx);
+                              });
+                        });
+                if (!result.has_value()) {
+                  return tl::make_unexpected(result.error());
+                }
+              }
+              return {o};
+            });
+      });
 }
 
 struct WorkFlowWrap {
   WorkFlowWrap(std::string container_type, int inner_loop_count = 0)
-      : appc(std::make_shared<app::Client>(1001)), btreewf(nullptr), bhashwf(nullptr), btreecl(1002),
-        bhashcl(1003), wfname(container_type), inner_loop_size(inner_loop_count) {
+      : appc(std::make_shared<app::Client>(1001)), btreewf(nullptr), bhashwf(nullptr),
+        btreecl(1002), bhashcl(1003), wfname(container_type), inner_loop_size(inner_loop_count) {
 
     if (container_type == "boost_ordered") {
       appc->init(app::Client::BOOST_ORDERED_INDEX);
-      btreewf = std::make_shared<app::WorkFlowTempl<BoostBtreeStorage>>( container_type+"_templ", btreecl);
+      btreewf = std::make_shared<app::WorkFlowTempl<BoostBtreeStorage>>(container_type + "_templ",
+                                                                        btreecl);
     } else if (container_type == "boost_hashed") {
       appc->init(app::Client::BOOST_HASHED_INDEX);
-      bhashwf = std::make_shared<app::WorkFlowTempl<BoostHashedStorage>>( container_type+"_templ", bhashcl);
-    } 
+      bhashwf = std::make_shared<app::WorkFlowTempl<BoostHashedStorage>>(container_type + "_templ",
+                                                                         bhashcl);
+    }
     // else if (container_type == "sqlite") {
     //   appc->init(app::Client::SQLite);
-    // } 
+    // }
     else {
       throw std::runtime_error("Invalid container type");
     }
@@ -101,10 +107,20 @@ struct WorkFlowWrap {
   bool runOrderMultiRouteMultiFill(int num_runs) {
     for (int idx = 0; idx < num_runs; idx++) {
       auto res = create_b_o_rs_fills<app::WorkFlow>(wfname, w, idx)
-        .and_then([&](auto o){
-          if(btreewf) { return create_b_o_rs_fills<app::WorkFlowTempl<BoostBtreeStorage>>(wfname, btreewf, idx);} else return tl::expected<types::IdType, types::Error>{o}; })
-        .and_then([&](auto o) {
-          if(bhashwf) { return create_b_o_rs_fills<app::WorkFlowTempl<BoostHashedStorage>>(wfname, bhashwf, idx);} else return tl::expected<types::IdType, types::Error>{o};});
+                     .and_then([&](auto o) {
+                       if (btreewf) {
+                         return create_b_o_rs_fills<app::WorkFlowTempl<BoostBtreeStorage>>(
+                             wfname, btreewf, idx);
+                       } else
+                         return tl::expected<types::IdType, types::Error>{o};
+                     })
+                     .and_then([&](auto o) {
+                       if (bhashwf) {
+                         return create_b_o_rs_fills<app::WorkFlowTempl<BoostHashedStorage>>(
+                             wfname, bhashwf, idx);
+                       } else
+                         return tl::expected<types::IdType, types::Error>{o};
+                     });
       if (!res.has_value()) {
         std::cerr << "Found error in " << idx << " run [" << res.error().what << "]" << std::endl;
         return false;
@@ -124,7 +140,6 @@ private:
   std::string broker;
   std::string order_clord_id;
   int inner_loop_size{0};
-
 };
 } // namespace
 

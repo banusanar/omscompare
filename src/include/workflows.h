@@ -37,7 +37,7 @@ public:
   tl::expected<types::IdType, types::Error> addFillForRoute(types::FixClOrdIdType route_clordid,
                                                             types::FixClOrdIdType &&exec_id);
 
-  const model::ClientStateBase& clientRO() const { return *(client_->state_); }
+  const model::ClientStateBase &clientRO() const { return *(client_->state_); }
   // std::shared_ptr<const model::ClientStateBase> clientRO() const { return client_->state_; }
 
   struct Scope {
